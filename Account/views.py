@@ -5,6 +5,7 @@ from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetConfirmView, PasswordChangeView
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib.auth import logout
+from django.contrib import messages
 
 
 
@@ -37,6 +38,10 @@ class RegisterView(CreateView):
     form_class = RegistrationForm
     success_url = reverse_lazy('login')
 
+    def form_valid(self, form):
+        messages.success(self.request, 'Successfully registered.')
+        return super().form_valid(form)
+
 
 class ChangePasswordView(LoginRequiredMixin, PasswordChangeView):
     template_name='change_password.html'
@@ -50,6 +55,7 @@ class ChangePasswordView(LoginRequiredMixin, PasswordChangeView):
         self.request.user.first_time_login = False
         self.request.user.save()
 
+        messages.success(self.request, 'Password changed successfully.')
         return super().form_valid(form)
 
 

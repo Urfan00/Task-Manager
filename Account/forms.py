@@ -122,11 +122,11 @@ class CustomSetPasswordForm(SetPasswordForm):
         widget=forms.PasswordInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': '********'
+                'placeholder': 'New Password'
             }))
     new_password2 = forms.CharField(required=True, label='Confirm New Password',
         widget=forms.PasswordInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': '********'
+                'placeholder': 'Confirm New Password'
             }))

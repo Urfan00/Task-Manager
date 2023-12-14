@@ -44,6 +44,12 @@ class Department(DateMixin):
 
 
 class Account(AbstractUser):
+    user_status = (
+        ('head_of_department', 'Head of Department'),
+        ('assistant', 'Assistant'),
+        ('staff_department', 'Staff Department')
+    )
+    status = models.CharField(max_length=20, choices=user_status, null=True, blank=True)
     FIN = models.CharField(max_length=21, unique=True)
     email = models.EmailField(unique=True, max_length=254)
     number = models.CharField(max_length=20)
@@ -51,7 +57,10 @@ class Account(AbstractUser):
     birthday = models.DateField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     department = models.OneToOneField(Department, on_delete=models.CASCADE, related_name='user_department', null=True, blank=True)
+    first_time_login = models.BooleanField(default=True)
+
     username = None
+
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['FIN', 'number']
@@ -72,17 +81,3 @@ class Account(AbstractUser):
         verbose_name = 'Account'
         verbose_name_plural = 'Account'
 
-
-class UserStatus(DateMixin):
-    first_time_login = models.BooleanField(default=True)
-    head_of_department = models.BooleanField(default=False)
-    assistant = models.BooleanField(default=True)
-    staff_department = models.BooleanField(default=True)
-    account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='user_status')
-
-    def __str__(self):
-        return f"{self.account.first_name} {self.account.last_name}"
-
-    class Meta:
-        verbose_name = 'User Status'
-        verbose_name_plural = 'User Status'

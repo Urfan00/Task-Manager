@@ -31,7 +31,6 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, FIN, number, password, **extra_fields)
 
 
-
 class Department(DateMixin):
     title = models.CharField(max_length=255)
     description = RichTextField(null=True, blank=True)

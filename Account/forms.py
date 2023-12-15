@@ -130,3 +130,7 @@ class CustomSetPasswordForm(SetPasswordForm):
                 'class': 'form-control',
                 'placeholder': 'Confirm New Password'
             }))
+
+
+class ExcelForm(forms.Form):
+    excel_file = forms.FileField(label='Enter Excel file')

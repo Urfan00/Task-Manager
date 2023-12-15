@@ -1,11 +1,18 @@
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from .forms import ChangePasswordForm, CustomSetPasswordForm, LoginForm, RegistrationForm, ResetPasswordForm
+from .models import Account
+from .resources import AccountResource
+from .forms import ChangePasswordForm, CustomSetPasswordForm, ExcelForm, LoginForm, RegistrationForm, ResetPasswordForm
 from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetConfirmView, PasswordChangeView
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib.auth import logout
 from django.contrib import messages
+from django.views import View
+from tablib import Dataset
+from django.http import HttpResponse
+from openpyxl import Workbook
+from django.db import IntegrityError
 
 
 
@@ -33,14 +40,84 @@ class LogInView(LoginView):
         return reverse_lazy('index')  # For anonymous users
 
 
-class RegisterView(CreateView):
+class RegisterView(View):
+    model = Account
     template_name = 'register.html'
-    form_class = RegistrationForm
-    success_url = reverse_lazy('login')
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Successfully registered.')
-        return super().form_valid(form)
+    def get_context_data(self):
+        context = {}
+        return context
+
+    def get(self, request, *args, **kwargs):
+        form = RegistrationForm()
+        excelform = ExcelForm()
+        return render(request, self.template_name, {**self.get_context_data(), 'form': form, 'excelform': excelform})
+
+    def post(self, request, *args, **kwargs):
+        form = RegistrationForm(request.POST, request.FILES)
+        excelform = ExcelForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            messages.success(self.request, 'Successfully registered.')
+            return redirect('register')
+        elif excelform.is_valid():
+            account_resource = AccountResource()
+            dataset = Dataset()
+            new_users = request.FILES['excel_file']
+
+            if not new_users.name.endswith('xlsx'):
+                messages.info(self.request, 'Format should be .xlsx')
+                return redirect('register')
+
+            imported_data = dataset.load(new_users.read(), format='xlsx')
+
+            failed_users = []
+
+            for data in imported_data:
+                data = list(data)
+
+                try:
+                    Account.objects.create(
+                        first_name=data[0],
+                        last_name=data[1],
+                        number=data[2],
+                        email=data[3],
+                        FIN=data[4],
+                        department=data[5],
+                        status=data[6],
+                    )
+                except IntegrityError as e:
+                    if 'UNIQUE constraint failed: Account_account.email' in str(e):
+                        # Handle the case where the email already exists
+                        failed_users.append(data)
+
+            if failed_users:
+                # Create a new Excel file with failed users
+                response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = 'attachment; filename="failed_users.xlsx"'
+
+                workbook = Workbook()
+                worksheet = workbook.active
+
+                # Add headers
+                headers = ['First Name', 'Last Name', 'Number', 'Email', 'FIN', 'Department', 'Status']
+                worksheet.append(headers)
+
+                # Add failed users
+                for failed_user in failed_users:
+                    worksheet.append(failed_user)
+
+                workbook.save(response)
+                messages.warning(self.request, 'Some users dont imported.')
+                return redirect('register')
+                # return response
+            else:
+                messages.success(self.request, 'Successfully imported all users.')
+                return redirect('register')
+        else:
+            messages.error(request, 'Don\'t registered')
+            return redirect('register')
 
 
 class ChangePasswordView(LoginRequiredMixin, PasswordChangeView):

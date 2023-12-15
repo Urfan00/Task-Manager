@@ -71,9 +71,12 @@ class Account(AbstractUser):
         return f"{self.first_name} {self.last_name}"
 
     def save(self, *args, **kwargs):
+
+        # Convert FIN to string
+        fin_str = str(self.FIN)
         # Set the password to FIN if it's not already set
         if not self.password:
-            self.set_password(self.FIN)
+            self.set_password(fin_str)
 
         super().save(*args, **kwargs)
 

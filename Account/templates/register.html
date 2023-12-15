@@ -2,11 +2,37 @@
 {% load static %}
 {% block content %}
 
+<style>
+  #single {
+    display: block;
+  }
+
+  #excel_form {
+    display: none;
+  }
+
+  .labels{
+    user-select: none;
+    margin-top: 15px;
+  }
+
+  input[type="checkbox"]{
+    float: left;
+    width: 20px;
+    height: 20px;
+    margin: 0 15px 0 20px;
+  }
+</style>
+
                   <div class="mt-7">
                     <h4 class="font-weight-bolder">Sign up</h4>
                     <p class="mb-0">Enter your email and password</p>
                   </div>
-                  <div class="card-body"><form method="post" role="form">
+
+                  {% include "messages.html" %}
+
+                  <div class="card-body" id="single">
+                    <form method="post" role="form" enctype="multipart/form-data">
 
                       {% csrf_token %}
 
@@ -14,7 +40,7 @@
                         <div class="alert alert-danger alert-dismissible" role="alert">
                           <div id="form_errors">
                             {% for key, value in form.errors.items %}
-                              <strong>{{ value }}</strong>
+                              <strong>{{ key }}{{ value }}</strong>
                             {% endfor %}
                           </div>
                           {% comment %} <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> {% endcomment %}
@@ -50,6 +76,41 @@
                     </form>
                     
                   </div>
+
+                  <label for="s" class="labels">Excel file ile birdefelik elave
+                    <input type="checkbox" id="s" name="s" class="checkboxDesign">
+                  </label>
+
+                  <div class="card-body" id="excel_form">
+                    <form method="post" role="form" enctype="multipart/form-data">
+
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                      <div class="alert alert-danger alert-dismissible" role="alert">
+                        <div id="form_errors">
+                          {% for key, value in form.errors.items %}
+                            <strong>{{ value }}</strong>
+                          {% endfor %}
+                        </div>
+                        {% comment %} <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> {% endcomment %}
+                      </div>
+                    {% endif %}
+
+                    <div class="input-group input-group-outline mb-2">
+                      <label for="excel_file">Enter excel file</label>
+                      <input type="file" name="excel_file">
+                    </div>
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0">Import Excel File</button>
+                    </div>
+                    </form>
+                  
+                  </div>
+
+
+
+
                   <div class="card-footer text-center pt-0 px-lg-2 px-1">
                     <p class="mb-2 text-sm mx-auto">
                       <p>Already have an account? <a href="#" class="text-primary text-gradient font-weight-bold">Sign in</a></p>
@@ -58,3 +119,20 @@
                   </div>
 
 {% endblock %}
+
+{% block js %}
+<script>
+  document.getElementById('s').addEventListener('change', function() {
+    var singleDiv = document.getElementById('single');
+    var excelFormDiv = document.getElementById('excel_form');
+
+    if (this.checked) {
+      singleDiv.style.display = 'none';
+      excelFormDiv.style.display = 'block';
+    } else {
+      singleDiv.style.display = 'block';
+      excelFormDiv.style.display = 'none';
+    }
+  });
+</script>
+{% endblock  %}

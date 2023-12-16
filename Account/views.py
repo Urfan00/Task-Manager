@@ -15,6 +15,18 @@ from openpyxl import Workbook
 from django.db import IntegrityError
 
 
+class StaffRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated:
+            # If the user is authenticated but not a staff, redirect to 404 page
+            return render(self.request, '404.html')
+        else:
+            # If the user is not authenticated, redirect to the login page
+            return redirect('login')  # Replace 'login' with the actual name or URL of your login page
+
 
 class LogInView(LoginView):
     template_name = 'login.html'
@@ -40,7 +52,7 @@ class LogInView(LoginView):
         return reverse_lazy('index')  # For anonymous users
 
 
-class RegisterView(View):
+class RegisterView(StaffRequiredMixin, View):
     model = Account
     template_name = 'register.html'
 

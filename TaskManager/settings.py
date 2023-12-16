@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     'Account',
     'Core',
+    'Task',
 
     'ckeditor',
     'import_export',

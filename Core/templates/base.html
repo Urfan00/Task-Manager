@@ -49,7 +49,7 @@
             {% url 'inbox' as inbox %}
             <a class="nav-link text-white {% if request.path == 'inbox' or request.path|slice:'/-' == inbox %} active bg-gradient-primary {% endif %}" href="{% url 'inbox' %}">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                <i class="material-icons opacity-10">table_view</i>
+                <i class="material-icons opacity-10">all_inbox</i>
               </div>
               <span class="nav-link-text ms-1">İnbox</span>
             </a>

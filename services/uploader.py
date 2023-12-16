@@ -9,4 +9,4 @@ class Uploader:
 
     @staticmethod
     def task_image(instance, filename):
-        return f"Task_Image/{instance.author.first_name}-{instance.author.last_name}/{instance.title}/{filename}"
+        return f"Task_Image/{instance.task_author.first_name}-{instance.task_author.last_name}/{instance.task_title}/{filename}"

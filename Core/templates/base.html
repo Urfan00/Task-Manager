@@ -64,8 +64,8 @@
             </a>
           </li>
           <li class="nav-item">
-            {% comment %} {% url 'profile' as profile %} {% endcomment %}
-            <a class="nav-link text-white {% if request.path == dashboard or request.path|slice:'/-' == dashboard %} active bg-gradient-primary {% endif %}" href="#">
+            {% url 'create' as create %}
+            <a class="nav-link text-white {% if request.path == create or request.path|slice:'/-' == create %} active bg-gradient-primary {% endif %}" href="{% url 'create' %}">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">create</i>
               </div>
@@ -123,7 +123,7 @@
                   Inbox
                 {% elif request.path == send_task %}
                   Send Task
-                {% elif request.path == dashboard %}
+                {% elif request.path == create %}
                   Create New Task
                 {% elif request.path == profile %}
                   Profile
@@ -137,7 +137,7 @@
                 Inbox
               {% elif request.path == send_task %}
                 Send Task
-              {% elif request.path == dashboard %}
+              {% elif request.path == create %}
                 Create New Task
               {% elif request.path == profile %}
                 Profile
@@ -546,5 +546,8 @@
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="{% static '' %}js/material-dashboard.min.js?v=3.1.0"></script>
+
+  {% block js %}
+  {% endblock %}
 </body>
 </html>

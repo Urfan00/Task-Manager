@@ -49,6 +49,7 @@ class InboxListView(ListView):
                  | Q(task_author__department__title__icontains=to_task_search)
                  | Q(task_author__email__icontains=to_task_search)
                  | Q(task_author__status__icontains=to_task_search)
+                 | Q(task_author__task_importance_level__icontains=to_task_search)
                  )
         elif cc_task_search:
             cc_tasks = cc_tasks.filter(
@@ -59,6 +60,7 @@ class InboxListView(ListView):
                  | Q(task_author__department__title__icontains=cc_task_search)
                  | Q(task_author__email__icontains=cc_task_search)
                  | Q(task_author__status__icontains=cc_task_search)
+                 | Q(task_author__task_importance_level__icontains=cc_task_search)
             )
 
         # Pagination to_tasks
@@ -93,11 +95,39 @@ class InboxListView(ListView):
 class SendTaskListView(ListView):
     model = Task
     template_name = 'send_task.html'
-    paginate_by = 30
+    paginate_by = 50
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tasks"] = Task.objects.filter(task_author=self.request.user).all()
+        tasks = Task.objects.filter(task_author=self.request.user).all()
+
+        search = self.request.GET.get('search', '')
+
+
+        if search:
+            tasks = tasks.filter(
+                 Q(task_title__icontains=search)
+                 | Q(task_importance_level__icontains=search)
+                 | Q(task_status__icontains=search)
+                 | Q(task_author__first_name__icontains=search)
+                 | Q(task_author__last_name__icontains=search)
+                 | Q(task_author__department__title__icontains=search)
+                 | Q(task_author__email__icontains=search)
+                 | Q(task_author__status__icontains=search)
+                 )
+
+        # Pagination cc_tasks
+        page = self.request.GET.get('page')
+        paginator = Paginator(tasks, self.paginate_by)
+
+        try:
+            tasks = paginator.page(page)
+        except PageNotAnInteger:
+            tasks = paginator.page(1)
+        except EmptyPage:
+            tasks = paginator.page(paginator.num_pages)
+
+        context["tasks"] = tasks
 
         return context
 

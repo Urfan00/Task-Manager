@@ -2,298 +2,205 @@
 {% load static %}
 {% block content %}
 
+<style>
+  #task-search::placeholder{
+    color:white;
+  }
+
+  /* Center pagination */
+  .pagination {
+    justify-content: center;
+  }
+
+  /* Style active page */
+  .pagination .page-item.active .page-link {
+    background-color: #e91e63;
+    border-color: #e91e63;
+  }
+
+  /* Style pagination links */
+  .pagination .page-link {
+    color: #333;
+  }
+
+  .pagination .page-link:hover {
+    background-color: #eee;
+  }
+</style>
+
     <div class="container-fluid py-4">
-      <div class="row">
+
+      <div id="tasks_table_id" class="row">
         <div class="col-12">
           <div class="card my-4">
             <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                <h6 class="text-white text-capitalize ps-3">Authors table</h6>
+              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-2 pb-1 d-flex justify-content-between px-4 align-items-center">
+                  <h6 class="text-white text-capitalize ps-3">Send Task table</h6>
+                  <!-- Search Form for To Task table -->
+                  <form class="mb-1" id="task-search-form">
+                      <div class="input-group bg-gradient-white input-group-outline ">
+                          <input style="color:white;" type="text" class="form-control" id="task-search" name="search" value="{{ request.GET.search }}" placeholder="search ...">
+                      </div>
+                  </form>
               </div>
             </div>
             <div class="card-body px-0 pb-2">
-              <div class="table-responsive p-0">
+              <div class="table-responsive p-0" id="task-table">
                 <table class="table align-items-center mb-0">
                   <thead>
                     <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Function</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Task Title</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">To Members</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CC Members</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Employed</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Importance</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deadline</th>
                       <th class="text-secondary opacity-7"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for task in tasks %}
-                      <tr>
-                        <td>
-                          <p class="text-xs font-weight-bold mb-0">{{ task.task_author.department.title }}</p>
-                          <p class="text-xs text-secondary mb-0">{{ task.task_author.status }}</p>
-                        </td>
-                        <td>
-                          <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
-                        </td>
-                        <td>
-                          <div class="avatar-group mt-2">
-                            <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson"><img src="{% static '' %}img/team-1.jpg" alt="team1" /></a>
-                            <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid"><img src="{% static '' %}img/team-2.jpg" alt="team2" /></a>
-                            <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith"><img src="{% static '' %}img/team-3.jpg" alt="team3" /></a>
-                            <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe"><img src="{% static '' %}img/team-4.jpg" alt="team4" /></a>
-                          </div>
-                        </td>
-                        <td>
-                          <div class="avatar-group mt-2">
-                            <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson"><img src="{% static '' %}img/team-1.jpg" alt="team1" /></a>
-                            <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid"><img src="{% static '' %}img/team-2.jpg" alt="team2" /></a>
-                          </div>
-                        </td>
-                        <td class="align-middle text-center text-sm">
-                          <span class="badge badge-sm bg-gradient-success">{{ task.task_status }}</span>
-                        </td>
-                        <td class="align-middle text-center">
-                          <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
-                        </td>
-                        <td class="align-middle">
-                          <a href="javascript:;" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
-                            Edit
-                          </a>
-                        </td>
-                      </tr>
+
+                        <tr>
+                          <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
+                          </td>
+                          <td>
+                            <div class="avatar-group mt-2">
+                              {% for member_action in task.task_to_member_action.all %}
+                                {% if member_action.task == task %}
+                                  <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.to_member.first_name }} {{ member_action.to_member.last_name }}">
+                                    <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                  </a>
+                                {% endif %}
+                              {% endfor %}
+                            </div>
+                          </td>
+                          <td>
+                            <div class="avatar-group mt-2">
+                              {% for member_action in task.task_cc_member_action.all %}
+                                {% if member_action.task == task %}
+                                  <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
+                                    <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                  </a>
+                                {% endif %}
+                              {% endfor %}
+                            </div>
+                          </td>
+                          <td class="align-middle text-center text-sm">
+                            <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                          </td>
+                          <td class="align-middle text-center text-sm">
+                            <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
+                          </td>
+                          <td class="align-middle">
+                            <a href="javascript:;" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                              Edit
+                            </a>
+                          </td>
+                        </tr>
+
                     {% endfor %}
                   </tbody>
                 </table>
               </div>
+
+              {% if tasks.paginator.num_pages > 1 %}
+                <div class="row justify-center pt-90 lg:pt-50 mt-3">
+                  <div class="">
+                    <nav aria-label="Page navigation">
+                      <ul class="pagination justify-content-center">
+                        {% if tasks.has_previous %}
+                          <li class="page-item">
+                            <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.previous_page_number }}" aria-label="Previous">
+                              <span aria-hidden="true">&laquo;</span>
+                            </a>
+                          </li>
+                        {% endif %}
+
+                        {% if tasks.number|add:'-2' > 1 %}
+                          <li class="page-item">
+                            <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.number|add:'-3' }}">&hellip;</a>
+                          </li>
+                        {% endif %}
+
+                        {% for num in tasks.paginator.page_range %}
+                          {% if tasks.number == num %}
+                            <li class="page-item active">
+                              <a class="page-link" href="?search={{ request.GET.search }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                          {% elif num > tasks.number|add:'-3' and num < tasks.number|add:'3' %}
+                            <li class="page-item">
+                              <a class="page-link" href="?search={{ request.GET.search }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                          {% endif %}
+                        {% endfor %}
+
+                        {% if tasks.paginator.num_pages > tasks.number|add:'2' %}
+                            <li class="page-item">
+                              <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.number|add:'3' }}">&hellip;</a>
+                            </li>
+                        {% endif %}
+
+                        {% if tasks.has_next %}
+                          <li class="page-item">
+                            <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.next_page_number }}" aria-label="Next">
+                              <span aria-hidden="true">&raquo;</span>
+                            </a>
+                          </li>
+                        {% endif %}
+                      </ul>
+                    </nav>
+                  </div>
+                </div>
+              {% endif %}
+
             </div>
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-12">
-          <div class="card my-4">
-            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                <h6 class="text-white text-capitalize ps-3">Projects table</h6>
-              </div>
-            </div>
-            <div class="card-body px-0 pb-2">
-              <div class="table-responsive p-0">
-                <table class="table align-items-center justify-content-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Project</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Budget</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder text-center opacity-7 ps-2">Completion</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="{% static '' %}img/small-logos/logo-asana.svg" class="avatar avatar-sm rounded-circle me-2" alt="spotify">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Asana</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$2,500</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">working</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">60%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="{% static '' %}img/small-logos/github.svg" class="avatar avatar-sm rounded-circle me-2" alt="invision">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Github</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$5,000</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">done</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">100%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="{% static '' %}img/small-logos/logo-atlassian.svg" class="avatar avatar-sm rounded-circle me-2" alt="jira">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Atlassian</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$3,400</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">canceled</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">30%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-danger" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="30" style="width: 30%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="{% static '' %}img/small-logos/bootstrap.svg" class="avatar avatar-sm rounded-circle me-2" alt="webdev">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Bootstrap</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$14,000</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">working</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">80%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="80" style="width: 80%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="{% static '' %}img/small-logos/logo-slack.svg" class="avatar avatar-sm rounded-circle me-2" alt="slack">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Slack</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$1,000</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">canceled</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">0%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0" style="width: 0%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="{% static '' %}img/small-logos/devto.svg" class="avatar avatar-sm rounded-circle me-2" alt="xd">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Devto</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$2,300</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">done</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">100%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
+{% endblock %}
+
+{% block js %}
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  function updateURL(varName, query, page) {
+    let state = history.state;
+    let title = document.title;
+    let pageQuery = page ? `&${varName}_page=${page}` : '';
+    let url = window.location.origin + window.location.pathname + `?${varName}=${encodeURI(query)}${pageQuery}`;
+    history.pushState(state, title, url);
+  }
+
+  $(document).ready(function () {
+    const task = $("#task-search");
+    const searchForm = $("#task-search-form");
+
+    function performSearch(page) {
+      $.ajax({
+        type: 'GET',
+        url: window.location.href,
+        data: { ...searchForm.serializeArray(), [`${task.attr('id')}_page`]: page },
+        success: function (response) {
+          $('#task-table').html($(response).find('#task-table').html());
+        },
+        error: function (error) {
+          console.error('Error during search:', error);
+        }
+      });
+    }
+
+    task.on('input', function (e) {
+      updateURL("search", e.target.value);
+      performSearch(1);
+    });
+  });
+</script>
+
 
 {% endblock %}

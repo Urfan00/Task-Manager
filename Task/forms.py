@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from .models import Task, TaskMembersAction
+from .models import Task, TaskToMembersAction, TaskCCMembersAction
 from ckeditor.widgets import CKEditorWidget
 from Account.models import Account
+
 
 class TaskForm(forms.ModelForm):
     to_member = forms.ModelMultipleChoiceField(
@@ -38,10 +39,9 @@ class TaskForm(forms.ModelForm):
         cc_members = self.cleaned_data.get('cc_member', [])
 
         for tmember in to_members:
-            if cc_members:
-                for cmember in cc_members:
-                    TaskMembersAction.objects.create(task=task, to_member=tmember, cc_member=cmember)
-            else:
-                TaskMembersAction.objects.create(task=task, to_member=tmember)
+            TaskToMembersAction.objects.create(task=task, to_member=tmember)
+
+        for cmember in cc_members:
+            TaskCCMembersAction.objects.create(task=task, cc_member=cmember)
 
         return task

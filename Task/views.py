@@ -1,17 +1,105 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView
+from django.views.generic import ListView, DetailView, CreateView
 from .models import Task
 from .forms import TaskForm
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q, Case, When, Value, BooleanField
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 
-def inbox(request):
-    return render(request, 'inbox.html')
+class InboxListView(ListView):
+    model = Task
+    template_name = 'inbox.html'
+    paginate_by = 50
 
-def send_task(request):
-    return render(request, 'inbox.html')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        to_task_search = self.request.GET.get('to_task_search', '')
+        cc_task_search = self.request.GET.get('cc_task_search', '')
+
+        to_tasks = Task.objects.filter(
+                task_to_member_action__to_member=self.request.user
+            ).exclude(task_author=self.request.user).distinct().annotate(
+            is_view=Case(
+                When(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_read=True, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            )
+        )
+
+        cc_tasks = Task.objects.filter(
+            task_cc_member_action__cc_member=self.request.user
+        ).exclude(task_author=self.request.user).distinct().annotate(
+            is_view=Case(
+                When(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_read=True, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            )
+        )
+
+        if to_task_search:
+            to_tasks = to_tasks.filter(
+                 Q(task_title__icontains=to_task_search)
+                 | Q(task_status__icontains=to_task_search)
+                 | Q(task_author__first_name__icontains=to_task_search)
+                 | Q(task_author__last_name__icontains=to_task_search)
+                 | Q(task_author__department__title__icontains=to_task_search)
+                 | Q(task_author__email__icontains=to_task_search)
+                 | Q(task_author__status__icontains=to_task_search)
+                 )
+        elif cc_task_search:
+            cc_tasks = cc_tasks.filter(
+                   Q(task_title__icontains=cc_task_search)
+                 | Q(task_status__icontains=cc_task_search)
+                 | Q(task_author__first_name__icontains=cc_task_search)
+                 | Q(task_author__last_name__icontains=cc_task_search)
+                 | Q(task_author__department__title__icontains=cc_task_search)
+                 | Q(task_author__email__icontains=cc_task_search)
+                 | Q(task_author__status__icontains=cc_task_search)
+            )
+
+        # Pagination to_tasks
+        to_task_search_page = self.request.GET.get('to_task_search_page')
+        paginator = Paginator(to_tasks, self.paginate_by)
+
+        try:
+            to_tasks = paginator.page(to_task_search_page)
+        except PageNotAnInteger:
+            to_tasks = paginator.page(1)
+        except EmptyPage:
+            to_tasks = paginator.page(paginator.num_pages)
+
+        # Pagination cc_tasks
+        cc_task_search_page = self.request.GET.get('cc_task_search_page')
+        paginator = Paginator(cc_tasks, self.paginate_by)
+
+        try:
+            cc_tasks = paginator.page(cc_task_search_page)
+        except PageNotAnInteger:
+            cc_tasks = paginator.page(1)
+        except EmptyPage:
+            cc_tasks = paginator.page(paginator.num_pages)
+
+
+        context['to_tasks'] = to_tasks
+        context['cc_tasks'] = cc_tasks
+
+        return context
+
+
+class SendTaskListView(ListView):
+    model = Task
+    template_name = 'send_task.html'
+    paginate_by = 30
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tasks"] = Task.objects.filter(task_author=self.request.user).all()
+
+        return context
 
 
 

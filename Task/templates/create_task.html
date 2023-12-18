@@ -14,6 +14,20 @@
             <div class="card-body px-0 pb-2">
               <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+
+                {% include "messages.html" %}
+
+                {% if form.errors %}
+                  <div class="alert alert-danger alert-dismissible" role="alert">
+                    <div id="form_errors">
+                      {% for key, value in form.errors.items %}
+                        <strong>{{ value }}</strong>
+                      {% endfor %}
+                    </div>
+                    {% comment %} <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> {% endcomment %}
+                  </div>
+                {% endif %}
+
                 <div class="row">
                   <div class="col-md-6">
                     <!-- Task Title -->
@@ -61,6 +75,11 @@
                   <label for="{{ form.cc_member.id_for_label }}" class="form-label">CC Members</label>
                   {{ form.cc_member }}
                 </div>
+                <!-- Task Category -->
+                <div class="mb-3">
+                  <label for="{{ form.task_category.id_for_label }}" class="form-label">{{ form.task_category.label }}</label>
+                  {{ form.task_category }}
+                </div>
                 <!-- Submit button -->
                 <button type="submit" class="btn btn-primary">Save Task</button>
               </form>
@@ -77,7 +96,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#id_to_member, #id_cc_member').select2();
+        $('#id_to_member, #id_cc_member, #id_task_category').select2();
     });
 </script>
 {% endblock %}

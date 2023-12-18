@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from .models import Task, TaskToMembersAction, TaskCCMembersAction
+from .models import Task, TaskCategory, TaskToMembersAction, TaskCCMembersAction
 from ckeditor.widgets import CKEditorWidget
 from Account.models import Account
 
@@ -18,6 +18,11 @@ class TaskForm(forms.ModelForm):
         required=False
     )
 
+    task_category = forms.ModelChoiceField(
+        queryset=TaskCategory.objects.all(),
+        required=False
+    )
+
     class Meta:
         model = Task
         fields = [
@@ -27,6 +32,7 @@ class TaskForm(forms.ModelForm):
             'task_status',
             'task_importance_level',
             'task_deadline',
+            'task_category'
         ]
         widgets = {
             'task_content': CKEditorWidget(),

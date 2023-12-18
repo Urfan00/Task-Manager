@@ -7,6 +7,18 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 
+
+class TaskCategory(DateMixin):
+    category_title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.category_title
+
+    class Meta:
+        verbose_name = 'Task Category'
+        verbose_name_plural = 'Task Category'
+
+
 class TaskToMembersAction(DateMixin):
     task = models.ForeignKey('Task', on_delete=models.CASCADE, related_name='task_to_member_action')
     to_member = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='task_to_members', null=True, blank=True)
@@ -57,6 +69,7 @@ class Task(LoginRequiredMixin, DateMixin):
     task_importance_level = models.CharField(max_length=20, choices=importance_level_status)
     task_deadline = models.DateField()
     task_author_is_deleted = models.BooleanField(default=False)
+    task_category = models.ForeignKey(TaskCategory, on_delete=models.CASCADE, related_name='task_category')
 
     def __str__(self):
         return self.task_title

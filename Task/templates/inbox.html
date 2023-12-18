@@ -69,6 +69,7 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Author</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Author Position</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Task Title</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Task Category</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">To Members</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CC Members</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
@@ -98,6 +99,9 @@
                           </td>
                           <td>
                             <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
+                          </td>
+                          <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
                           </td>
                           <td>
                             <div class="avatar-group mt-2">
@@ -218,6 +222,7 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Author</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Author Position</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Task Title</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Task Category</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">To Members</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CC Members</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
@@ -247,6 +252,9 @@
                       </td>
                       <td>
                         <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
                       </td>
                       <td>
                         <div class="avatar-group mt-2">

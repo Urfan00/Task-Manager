@@ -51,6 +51,7 @@ class InboxListView(LoginRequiredMixin, ListView):
                  | Q(task_author__department__title__icontains=to_task_search)
                  | Q(task_author__email__icontains=to_task_search)
                  | Q(task_author__status__icontains=to_task_search)
+                 | Q(task_category__category_title__icontains=to_task_search)
                  )
         elif cc_task_search:
             cc_tasks = cc_tasks.filter(
@@ -62,6 +63,7 @@ class InboxListView(LoginRequiredMixin, ListView):
                  | Q(task_author__department__title__icontains=cc_task_search)
                  | Q(task_author__email__icontains=cc_task_search)
                  | Q(task_author__status__icontains=cc_task_search)
+                 | Q(task_category__category_title__icontains=cc_task_search)
             )
 
         # Pagination to_tasks
@@ -115,6 +117,7 @@ class SendTaskListView(LoginRequiredMixin, ListView):
                  | Q(task_author__department__title__icontains=search)
                  | Q(task_author__email__icontains=search)
                  | Q(task_author__status__icontains=search)
+                 | Q(task_category__category_title__icontains=search)
                  )
 
         # Pagination cc_tasks

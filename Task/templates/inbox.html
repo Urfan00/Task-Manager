@@ -79,68 +79,150 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for task in to_tasks %}
-                     
-                        <tr {% if not task.is_view %}class="bg-gradient-light"{% endif %}>
-                          <td>
-                            <div class="d-flex px-2 py-1">
-                              <div>
-                                <img src="{% if task.task_author.image %}{{ task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
-                              </div>
-                              <div class="d-flex flex-column justify-content-center">
-                                <h6 class="mb-0 text-sm">{{ task.task_author.first_name }} {{ task.task_author.last_name }}</h6>
-                                <p class="text-xs text-secondary mb-0">{{ task.task_author.email }}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <p class="text-xs font-weight-bold mb-0">{{ task.task_author.department.title }}</p>
-                            <p class="text-xs text-secondary mb-0">{{ task.task_author.status }}</p>
-                          </td>
-                          <td>
-                            <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
-                          </td>
-                          <td>
-                            <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
-                          </td>
-                          <td>
-                            <div class="avatar-group mt-2">
-                              {% for member_action in task.task_to_member_action.all %}
-                                {% if member_action.task == task %}
-                                  <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.to_member.first_name }} {{ member_action.to_member.last_name }}">
-                                    <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
-                                  </a>
-                                {% endif %}
-                              {% endfor %}
-                            </div>
-                          </td>
-                          <td>
-                            <div class="avatar-group mt-2">
-                              {% for member_action in task.task_cc_member_action.all %}
-                                {% if member_action.task == task %}
-                                  <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
-                                    <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
-                                  </a>
-                                {% endif %}
-                              {% endfor %}
-                            </div>
-                          </td>
-                          <td class="align-middle text-center text-sm">
-                            <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
-                          </td>
-                          <td class="align-middle text-center text-sm">
-                            <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
-                          </td>
-                          <td class="align-middle text-center">
-                            <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
-                          </td>
-                          <td class="align-middle">
-                            <a href="javascript:;" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
-                              Edit
-                            </a>
-                          </td>
-                        </tr>
+                    {% if to_tasks_pinned %}
+                      <tr>
+                        <td>
+                          Pinned
+                        </td>
+                      </tr>
+                    {% endif %}
 
+                    {% for task in to_tasks_pinned %}
+                      <tr {% if not task.is_view %}class="bg-gradient-light"{% endif %}>
+                        <td>
+                          <div class="d-flex px-2 py-1">
+                            <div>
+                              <img src="{% if task.task_author.image %}{{ task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                            </div>
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">{{ task.task_author.first_name }} {{ task.task_author.last_name }}</h6>
+                              <p class="text-xs text-secondary mb-0">{{ task.task_author.email }}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_author.department.title }}</p>
+                          <p class="text-xs text-secondary mb-0">{{ task.task_author.status }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_to_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.to_member.first_name }} {{ member_action.to_member.last_name }}">
+                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_cc_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
+                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
+                        </td>
+                        <td class="align-middle">
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="pin" data-task-id="{{ task.id }}" data-target="successToast">
+                              <i class="material-icons opacity-10 text-dark" title="Pin">push_pin</i>
+                          </a>
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ task.id }}" data-target="infoToast">
+                              <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
+                          </a>
+                        </td>
+                      </tr>
+                    {% endfor %}
+
+                    {% if to_tasks %}
+                      <tr>
+                        <td>
+                          Not Pinned
+                        </td>
+                      </tr>
+                    {% endif %}
+
+                    {% for task in to_tasks %}
+                      <tr {% if not task.is_view %}class="bg-gradient-light"{% endif %}>
+                        <td>
+                          <div class="d-flex px-2 py-1">
+                            <div>
+                              <img src="{% if task.task_author.image %}{{ task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                            </div>
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">{{ task.task_author.first_name }} {{ task.task_author.last_name }}</h6>
+                              <p class="text-xs text-secondary mb-0">{{ task.task_author.email }}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_author.department.title }}</p>
+                          <p class="text-xs text-secondary mb-0">{{ task.task_author.status }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_to_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.to_member.first_name }} {{ member_action.to_member.last_name }}">
+                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_cc_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
+                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
+                        </td>
+                        <td class="align-middle">
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="pin" data-task-id="{{ task.id }}" data-target="successToast">
+                              <i class="material-icons opacity-10 text-dark" title="Pin">push_pin</i>
+                          </a>
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ task.id }}" data-target="infoToast">
+                              <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
+                          </a>
+                        </td>
+                      </tr>
                     {% endfor %}
                   </tbody>
                 </table>
@@ -232,69 +314,155 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for task in cc_tasks %}
-                     
-                    <tr {% if not task.is_view %}class="bg-gradient-light"{% endif %}>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="{% if task.task_author.image %}{{ task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">{{ task.task_author.first_name }} {{ task.task_author.last_name }}</h6>
-                            <p class="text-xs text-secondary mb-0">{{ task.task_author.email }}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-xs font-weight-bold mb-0">{{ task.task_author.department.title }}</p>
-                        <p class="text-xs text-secondary mb-0">{{ task.task_author.status }}</p>
-                      </td>
-                      <td>
-                        <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
-                      </td>
-                      <td>
-                        <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          {% for member_action in task.task_to_member_action.all %}
-                            {% if member_action.task == task %}
-                              <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.to_member.first_name }} {{ member_action.to_member.last_name }}">
-                                <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
-                              </a>
-                            {% endif %}
-                          {% endfor %}
-                         </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          {% for member_action in task.task_cc_member_action.all %}
-                            {% if member_action.task == task %}
-                              <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
-                                <img src="{% if member_action.cc_member.image %}{{ member_action.cc_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
-                              </a>
-                            {% endif %}
-                          {% endfor %}
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
-                      </td>
-                      <td class="align-middle">
-                        <a href="javascript:;" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
-                          Edit
-                        </a>
-                      </td>
-                    </tr>
 
-                {% endfor %}
+                    {% if cc_tasks_pinned %}
+                      <tr>
+                        <td>
+                          Pinned
+                        </td>
+                      </tr>
+                    {% endif %}
+
+                    {% for task in cc_tasks_pinned %}
+                      <tr {% if not task.is_view %}class="bg-gradient-light"{% endif %}>
+                        <td>
+                          <div class="d-flex px-2 py-1">
+                            <div>
+                              <img src="{% if task.task_author.image %}{{ task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                            </div>
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">{{ task.task_author.first_name }} {{ task.task_author.last_name }}</h6>
+                              <p class="text-xs text-secondary mb-0">{{ task.task_author.email }}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_author.department.title }}</p>
+                          <p class="text-xs text-secondary mb-0">{{ task.task_author.status }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_to_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.to_member.first_name }} {{ member_action.to_member.last_name }}">
+                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_cc_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
+                                  <img src="{% if member_action.cc_member.image %}{{ member_action.cc_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
+                        </td>
+                        <td class="align-middle">
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="pin" data-task-id="{{ task.id }}" data-target="successToast">
+                              <i class="material-icons opacity-10 text-dark" title="Pin">push_pin</i>
+                          </a>
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ task.id }}" data-target="infoToast">
+                              <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
+                          </a>
+                        </td>
+                      </tr>
+                    {% endfor %}
+
+
+                    {% if cc_tasks %}
+                      <tr>
+                        <td>
+                          Not Pinned
+                        </td>
+                      </tr>
+                    {% endif %}
+
+                    {% for task in cc_tasks %}
+
+                      <tr {% if not task.is_view %}class="bg-gradient-light"{% endif %}>
+                        <td>
+                          <div class="d-flex px-2 py-1">
+                            <div>
+                              <img src="{% if task.task_author.image %}{{ task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                            </div>
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">{{ task.task_author.first_name }} {{ task.task_author.last_name }}</h6>
+                              <p class="text-xs text-secondary mb-0">{{ task.task_author.email }}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_author.department.title }}</p>
+                          <p class="text-xs text-secondary mb-0">{{ task.task_author.status }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_to_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.to_member.first_name }} {{ member_action.to_member.last_name }}">
+                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="avatar-group mt-2">
+                            {% for member_action in task.task_cc_member_action.all %}
+                              {% if member_action.task == task %}
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
+                                  <img src="{% if member_action.cc_member.image %}{{ member_action.cc_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                </a>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
+                        </td>
+                        <td class="align-middle">
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="pin" data-task-id="{{ task.id }}" data-target="successToast">
+                              <i class="material-icons opacity-10 text-dark" title="Pin">push_pin</i>
+                          </a>
+                          <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ task.id }}" data-target="infoToast">
+                              <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
+                          </a>
+                        </td>
+                      </tr>
+
+                    {% endfor %}
                   </tbody>
                 </table>
               </div>
@@ -354,6 +522,23 @@
         </div>
       </div>
 
+{% comment %} --------------------------------------------------- {% endcomment %}
+
+      <div class="position-fixed bottom-1 end-1 z-index-2">
+        <div class="toast fade hide p-2 bg-white" role="alert" aria-live="assertive" id="successToast" aria-atomic="true">
+          <div class="toast-header border-0">
+            <i class="material-icons text-success me-2">check</i>
+            <span class="me-auto font-weight-bold">Material Dashboard </span>
+            <small class="text-body">11 mins ago</small>
+            <i class="fas fa-times text-md ms-3 cursor-pointer" data-bs-dismiss="toast" aria-label="Close"></i>
+          </div>
+          <hr class="horizontal dark m-0">
+          <div class="toast-body">
+            Hello, world! This is a notification message.
+          </div>
+        </div>
+       
+      </div>
 {% endblock %}
 
 {% block js %}
@@ -413,6 +598,33 @@
       updateURL("cc_task_search", e.target.value, 1);
       toTask.val('');
       performSearch(1);
+    });
+  });
+
+  var csrfToken = "{{ csrf_token }}";
+
+  $(document).ready(function () {
+    $('.action-icon').on('click', function () {
+        // Get the task ID from the data attribute
+        var taskId = $(this).data('task-id');
+        // Get the action type from the data attribute ('pin' or 'delete')
+        var actionType = $(this).data('action-type');
+
+        // Send an AJAX request to toggle the pin or delete status
+        $.ajax({
+            type: 'POST',
+            url: '/toggle_action_status/',  // Update the URL to the endpoint in your Django views
+            data: {
+                'task_id': taskId,
+                'action_type': actionType,
+                csrfmiddlewaretoken: csrfToken,  // Include the CSRF token in the data
+
+            },
+            success: function (data) {
+                // Perform any other actions based on the server response
+                // If needed, you can add additional logic here
+            }
+        });
     });
   });
 

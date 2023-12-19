@@ -72,6 +72,33 @@
               <span class="nav-link-text ms-1">Create New Task</span>
             </a>
           </li>
+          <li class="nav-item">
+            {% url 'create' as create %}
+            <a class="nav-link text-white {% if request.path == create or request.path|slice:'/-' == create %} active bg-gradient-primary {% endif %}" href="{% url 'create' %}">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="material-icons opacity-10">forward</i>
+              </div>
+              <span class="nav-link-text ms-1">Forward to me</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            {% url 'create' as create %}
+            <a class="nav-link text-white {% if request.path == create or request.path|slice:'/-' == create %} active bg-gradient-primary {% endif %}" href="{% url 'create' %}">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="material-icons opacity-10">forward</i>
+              </div>
+              <span class="nav-link-text ms-1">Forward</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            {% url 'create' as create %}
+            <a class="nav-link text-white {% if request.path == create or request.path|slice:'/-' == create %} active bg-gradient-primary {% endif %}" href="{% url 'create' %}">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="material-icons opacity-10">delete</i>
+              </div>
+              <span class="nav-link-text ms-1">Bin</span>
+            </a>
+          </li>
           <li class="nav-item mt-3">
             <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Account pages</h6>
           </li>

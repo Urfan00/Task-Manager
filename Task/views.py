@@ -22,7 +22,21 @@ class InboxListView(LoginRequiredMixin, ListView):
         cc_task_search = self.request.GET.get('cc_task_search', '')
 
         to_tasks = Task.objects.order_by('-created_at').filter(
-                task_to_member_action__to_member=self.request.user
+                task_to_member_action__to_member=self.request.user,
+                task_to_member_action__task_member_is_pin = False,
+                task_to_member_action__task_member_is_deleted = False
+            ).exclude(task_author=self.request.user).distinct().annotate(
+            is_view=Case(
+                When(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_read=True, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            )
+        )
+
+        to_tasks_pinned = Task.objects.order_by('-created_at').filter(
+                task_to_member_action__to_member=self.request.user,
+                task_to_member_action__task_member_is_pin = True,
+                task_to_member_action__task_member_is_deleted = False
             ).exclude(task_author=self.request.user).distinct().annotate(
             is_view=Case(
                 When(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_read=True, then=Value(True)),
@@ -32,7 +46,21 @@ class InboxListView(LoginRequiredMixin, ListView):
         )
 
         cc_tasks = Task.objects.order_by('-created_at').filter(
-            task_cc_member_action__cc_member=self.request.user
+            task_cc_member_action__cc_member=self.request.user,
+            task_cc_member_action__task_member_is_pin = False,
+            task_cc_member_action__task_member_is_deleted = False
+        ).exclude(task_author=self.request.user).distinct().annotate(
+            is_view=Case(
+                When(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_read=True, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            )
+        )
+
+        cc_tasks_pinned = Task.objects.order_by('-created_at').filter(
+            task_cc_member_action__cc_member=self.request.user,
+            task_cc_member_action__task_member_is_pin = True,
+            task_cc_member_action__task_member_is_deleted = False
         ).exclude(task_author=self.request.user).distinct().annotate(
             is_view=Case(
                 When(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_read=True, then=Value(True)),
@@ -53,8 +81,30 @@ class InboxListView(LoginRequiredMixin, ListView):
                  | Q(task_author__status__icontains=to_task_search)
                  | Q(task_category__category_title__icontains=to_task_search)
                  )
+            to_tasks_pinned = to_tasks_pinned.filter(
+                 Q(task_title__icontains=to_task_search)
+                 | Q(task_importance_level__icontains=to_task_search)
+                 | Q(task_status__icontains=to_task_search)
+                 | Q(task_author__first_name__icontains=to_task_search)
+                 | Q(task_author__last_name__icontains=to_task_search)
+                 | Q(task_author__department__title__icontains=to_task_search)
+                 | Q(task_author__email__icontains=to_task_search)
+                 | Q(task_author__status__icontains=to_task_search)
+                 | Q(task_category__category_title__icontains=to_task_search)
+                 )
         elif cc_task_search:
             cc_tasks = cc_tasks.filter(
+                   Q(task_title__icontains=cc_task_search)
+                 | Q(task_importance_level__icontains=cc_task_search)
+                 | Q(task_status__icontains=cc_task_search)
+                 | Q(task_author__first_name__icontains=cc_task_search)
+                 | Q(task_author__last_name__icontains=cc_task_search)
+                 | Q(task_author__department__title__icontains=cc_task_search)
+                 | Q(task_author__email__icontains=cc_task_search)
+                 | Q(task_author__status__icontains=cc_task_search)
+                 | Q(task_category__category_title__icontains=cc_task_search)
+            )
+            cc_tasks_pinned = cc_tasks_pinned.filter(
                    Q(task_title__icontains=cc_task_search)
                  | Q(task_importance_level__icontains=cc_task_search)
                  | Q(task_status__icontains=cc_task_search)
@@ -91,6 +141,8 @@ class InboxListView(LoginRequiredMixin, ListView):
 
         context['to_tasks'] = to_tasks
         context['cc_tasks'] = cc_tasks
+        context['to_tasks_pinned'] = to_tasks_pinned
+        context['cc_tasks_pinned'] = cc_tasks_pinned
 
         return context
 
@@ -153,3 +205,49 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         # Additional logic can be added here if needed
         messages.error(self.request, 'Could not send the task')
         return super().form_invalid(form)
+
+
+
+
+# PIN & DELETE
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+
+def toggle_action_status(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        action_type = request.POST.get('action_type')
+        
+        # Use get_object_or_404 to handle the case where the Task doesn't exist
+        task = get_object_or_404(Task, id=task_id)
+        
+        # Check if the task_to_member_action and task_cc_member_action exist
+        pin_delete_to_member = task.task_to_member_action.filter(task=task, to_member=request.user).first()
+        pin_delete_cc_member = task.task_cc_member_action.filter(task=task, cc_member=request.user).first()
+
+        if action_type == 'pin':
+            # Toggle the task_member_is_pin status for task_to_member_action
+            if pin_delete_to_member:
+                pin_delete_to_member.task_member_is_pin = not pin_delete_to_member.task_member_is_pin
+                pin_delete_to_member.save()
+
+            # Toggle the task_member_is_pin status for task_cc_member_action
+            if pin_delete_cc_member:
+                pin_delete_cc_member.task_member_is_pin = not pin_delete_cc_member.task_member_is_pin
+                pin_delete_cc_member.save()
+
+            return JsonResponse({'is_pinned': pin_delete_to_member.task_member_is_pin if pin_delete_to_member else False})
+
+        elif action_type == 'delete':
+            # Set the task_member_is_deleted status to True for task_to_member_action
+            if pin_delete_to_member:
+                pin_delete_to_member.task_member_is_deleted = True
+                pin_delete_to_member.save()
+
+            # Set the task_member_is_deleted status to True for task_cc_member_action
+            if pin_delete_cc_member:
+                pin_delete_cc_member.task_member_is_deleted = True
+                pin_delete_cc_member.save()
+
+            return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})

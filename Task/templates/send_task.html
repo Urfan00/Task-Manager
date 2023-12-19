@@ -55,6 +55,7 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CC Members</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Importance</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Create Time</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deadline</th>
                       <th class="text-secondary opacity-7"></th>
                     </tr>
@@ -98,11 +99,17 @@
                             <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
                           </td>
                           <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">{{ task.created_at|date:"j M, Y - H:i" }}</span>
+                          </td>
+                          <td class="align-middle text-center">
                             <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
                           </td>
                           <td class="align-middle">
-                            <a href="javascript:;" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
-                              Edit
+                            <a href="#" class="text-secondary font-weight-bold text-xs" data-task-id="{{ task.id }}">
+                                <i class="material-icons opacity-10 text-dark" title="Edit">edit</i>
+                            </a>
+                            <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ task.id }}" data-target="successToast">
+                                <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
                             </a>
                           </td>
                         </tr>
@@ -167,6 +174,23 @@
         </div>
       </div>
 
+{% comment %} --------------------------------------------------- {% endcomment %}
+
+<div class="position-fixed bottom-1 end-1 z-index-2">
+  <div class="toast fade hide p-2 bg-white" role="alert" aria-live="assertive" id="successToast" aria-atomic="true">
+    <div class="toast-header border-0">
+      <i class="material-icons text-success me-2">check</i>
+      <span class="me-auto font-weight-bold">Material Dashboard </span>
+      <small class="text-body">11 mins ago</small>
+      <i class="fas fa-times text-md ms-3 cursor-pointer" data-bs-dismiss="toast" aria-label="Close"></i>
+    </div>
+    <hr class="horizontal dark m-0">
+    <div class="toast-body">
+      Hello, world! This is a notification message.
+    </div>
+  </div>
+ 
+</div>
 {% endblock %}
 
 {% block js %}
@@ -204,6 +228,35 @@
       performSearch(1);
     });
   });
+
+
+  var csrfToken = "{{ csrf_token }}";
+
+  $(document).ready(function () {
+    $('.action-icon').on('click', function () {
+        // Get the task ID from the data attribute
+        var taskId = $(this).data('task-id');
+        // Get the action type from the data attribute ('pin' or 'delete')
+        var actionType = $(this).data('action-type');
+
+        // Send an AJAX request to toggle the pin or delete status
+        $.ajax({
+            type: 'POST',
+            url: '/toggle_action_status/',  // Update the URL to the endpoint in your Django views
+            data: {
+                'task_id': taskId,
+                'action_type': actionType,
+                csrfmiddlewaretoken: csrfToken,  // Include the CSRF token in the data
+
+            },
+            success: function (data) {
+                // Perform any other actions based on the server response
+                // If needed, you can add additional logic here
+            }
+        });
+    });
+  });
+
 </script>
 
 

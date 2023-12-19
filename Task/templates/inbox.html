@@ -74,6 +74,7 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CC Members</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Importance</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Create Time</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deadline</th>
                       <th class="text-secondary opacity-7"></th>
                     </tr>
@@ -137,6 +138,9 @@
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.created_at|date:"j M, Y - H:i" }}</span>
                         </td>
                         <td class="align-middle text-center">
                           <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
@@ -210,6 +214,9 @@
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.created_at|date:"j M, Y - H:i" }}</span>
                         </td>
                         <td class="align-middle text-center">
                           <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
@@ -309,6 +316,7 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CC Members</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Importance</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Create Time</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deadline</th>
                       <th class="text-secondary opacity-7"></th>
                     </tr>
@@ -373,6 +381,9 @@
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.created_at|date:"j M, Y - H:i" }}</span>
                         </td>
                         <td class="align-middle text-center">
                           <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
@@ -448,6 +459,9 @@
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ task.created_at|date:"j M, Y - H:i" }}</span>
                         </td>
                         <td class="align-middle text-center">
                           <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>

@@ -154,7 +154,7 @@ class SendTaskListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        tasks = Task.objects.filter(task_author=self.request.user).order_by('-created_at').all()
+        tasks = Task.objects.filter(task_author=self.request.user, task_author_is_deleted=False).order_by('-created_at').all()
 
         search = self.request.GET.get('search', '')
 
@@ -225,6 +225,7 @@ def toggle_action_status(request):
         # Check if the task_to_member_action and task_cc_member_action exist
         pin_delete_to_member = task.task_to_member_action.filter(task=task, to_member=request.user).first()
         pin_delete_cc_member = task.task_cc_member_action.filter(task=task, cc_member=request.user).first()
+        pin_delete_send_member = Task.objects.filter(id=task_id, task_author=request.user).first()
 
         if action_type == 'pin':
             # Toggle the task_member_is_pin status for task_to_member_action
@@ -249,5 +250,9 @@ def toggle_action_status(request):
             if pin_delete_cc_member:
                 pin_delete_cc_member.task_member_is_deleted = True
                 pin_delete_cc_member.save()
+
+            if pin_delete_send_member:
+                pin_delete_send_member.task_author_is_deleted = True
+                pin_delete_send_member.save()
 
             return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})

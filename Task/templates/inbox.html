@@ -126,8 +126,8 @@
                           <div class="avatar-group mt-2">
                             {% for member_action in task.task_cc_member_action.all %}
                               {% if member_action.task == task %}
-                                <a href="" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
-                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
+                                  <img src="{% if member_action.cc_member.image %}{{ member_action.cc_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
                                 </a>
                               {% endif %}
                             {% endfor %}
@@ -203,7 +203,7 @@
                             {% for member_action in task.task_cc_member_action.all %}
                               {% if member_action.task == task %}
                                 <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ member_action.cc_member.first_name }} {{ member_action.cc_member.last_name }}">
-                                  <img src="{% if member_action.to_member.image %}{{ member_action.to_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
+                                  <img src="{% if member_action.cc_member.image %}{{ member_action.cc_member.image.url }}{% else %}{% static '' %}img/team-1.jpg{% endif %}" alt="team1" />
                                 </a>
                               {% endif %}
                             {% endfor %}

@@ -24,7 +24,8 @@ class InboxListView(LoginRequiredMixin, ListView):
         to_tasks = Task.objects.order_by('-created_at').filter(
                 task_to_member_action__to_member=self.request.user,
                 task_to_member_action__task_member_is_pin = False,
-                task_to_member_action__task_member_is_deleted = False
+                task_to_member_action__task_member_is_deleted = False,
+                task_to_member_action__bin_deleted = False
             ).exclude(task_author=self.request.user).distinct().annotate(
             is_view=Case(
                 When(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_read=True, then=Value(True)),
@@ -36,7 +37,8 @@ class InboxListView(LoginRequiredMixin, ListView):
         to_tasks_pinned = Task.objects.order_by('-created_at').filter(
                 task_to_member_action__to_member=self.request.user,
                 task_to_member_action__task_member_is_pin = True,
-                task_to_member_action__task_member_is_deleted = False
+                task_to_member_action__task_member_is_deleted = False,
+                task_to_member_action__bin_deleted = False
             ).exclude(task_author=self.request.user).distinct().annotate(
             is_view=Case(
                 When(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_read=True, then=Value(True)),
@@ -48,7 +50,8 @@ class InboxListView(LoginRequiredMixin, ListView):
         cc_tasks = Task.objects.order_by('-created_at').filter(
             task_cc_member_action__cc_member=self.request.user,
             task_cc_member_action__task_member_is_pin = False,
-            task_cc_member_action__task_member_is_deleted = False
+            task_cc_member_action__task_member_is_deleted = False,
+            task_cc_member_action__bin_deleted = False
         ).exclude(task_author=self.request.user).distinct().annotate(
             is_view=Case(
                 When(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_read=True, then=Value(True)),
@@ -60,7 +63,8 @@ class InboxListView(LoginRequiredMixin, ListView):
         cc_tasks_pinned = Task.objects.order_by('-created_at').filter(
             task_cc_member_action__cc_member=self.request.user,
             task_cc_member_action__task_member_is_pin = True,
-            task_cc_member_action__task_member_is_deleted = False
+            task_cc_member_action__task_member_is_deleted = False,
+            task_cc_member_action__bin_deleted = False
         ).exclude(task_author=self.request.user).distinct().annotate(
             is_view=Case(
                 When(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_read=True, then=Value(True)),
@@ -154,7 +158,7 @@ class SendTaskListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        tasks = Task.objects.filter(task_author=self.request.user, task_author_is_deleted=False).order_by('-created_at').all()
+        tasks = Task.objects.filter(task_author=self.request.user, task_author_is_deleted=False, bin_deleted=False).order_by('-created_at').all()
 
         search = self.request.GET.get('search', '')
 
@@ -251,9 +255,7 @@ class BinListView(LoginRequiredMixin, ListView):
         return context
 
 
-
-
-# PIN & DELETE
+# PIN & DELETE & UNDELETE & DELETE FOREVER
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 

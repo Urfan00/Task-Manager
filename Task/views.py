@@ -188,7 +188,6 @@ class SendTaskListView(LoginRequiredMixin, ListView):
         return context
 
 
-
 class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
@@ -205,6 +204,51 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         # Additional logic can be added here if needed
         messages.error(self.request, 'Could not send the task')
         return super().form_invalid(form)
+
+
+class BinListView(LoginRequiredMixin, ListView):
+    model = Task
+    template_name = 'bin.html'
+    paginate_by = 50
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        search = self.request.GET.get('search', '')
+
+
+        bin_tasks = Task.objects.filter(
+              Q(task_author=self.request.user, task_author_is_deleted=True, bin_deleted=False)
+            | Q(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_deleted=True, task_to_member_action__bin_deleted=False)
+            | Q(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_deleted=True, task_cc_member_action__bin_deleted=False)
+        ).order_by('-created_at').distinct()
+
+        if search:
+            bin_tasks = bin_tasks.filter(
+                 Q(task_title__icontains=search)
+                 | Q(task_importance_level__icontains=search)
+                 | Q(task_status__icontains=search)
+                 | Q(task_author__first_name__icontains=search)
+                 | Q(task_author__last_name__icontains=search)
+                 | Q(task_author__department__title__icontains=search)
+                 | Q(task_author__email__icontains=search)
+                 | Q(task_author__status__icontains=search)
+                 | Q(task_category__category_title__icontains=search)
+                 )
+
+        # Pagination to_tasks
+        page = self.request.GET.get('page')
+        paginator = Paginator(bin_tasks, self.paginate_by)
+
+        try:
+            bin_tasks = paginator.page(page)
+        except PageNotAnInteger:
+            bin_tasks = paginator.page(1)
+        except EmptyPage:
+            bin_tasks = paginator.page(paginator.num_pages)
+
+        context["bin_tasks"] = bin_tasks
+        return context
 
 
 
@@ -256,3 +300,37 @@ def toggle_action_status(request):
                 pin_delete_send_member.save()
 
             return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})
+
+        elif action_type == 'undelete':
+            # Set the task_member_is_deleted status to False for task_to_member_action
+            if pin_delete_to_member:
+                pin_delete_to_member.task_member_is_deleted = False
+                pin_delete_to_member.save()
+
+            # Set the task_member_is_deleted status to False for task_cc_member_action
+            if pin_delete_cc_member:
+                pin_delete_cc_member.task_member_is_deleted = False
+                pin_delete_cc_member.save()
+
+            if pin_delete_send_member:
+                pin_delete_send_member.task_author_is_deleted = False
+                pin_delete_send_member.save()
+
+            return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})
+
+        elif action_type == 'delete_forever':
+            # Set the bin_deleted status to True for task_to_member_action
+            if pin_delete_to_member:
+                pin_delete_to_member.bin_deleted = True
+                pin_delete_to_member.save()
+
+            # Set the bin_deleted status to True for task_cc_member_action
+            if pin_delete_cc_member:
+                pin_delete_cc_member.bin_deleted = True
+                pin_delete_cc_member.save()
+
+            if pin_delete_send_member:
+                pin_delete_send_member.bin_deleted = True
+                pin_delete_send_member.save()
+
+            return JsonResponse({'deleted': True})

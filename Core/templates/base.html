@@ -91,8 +91,8 @@
             </a>
           </li>
           <li class="nav-item">
-            {% url 'create' as create %}
-            <a class="nav-link text-white {% if request.path == create or request.path|slice:'/-' == create %} active bg-gradient-primary {% endif %}" href="{% url 'create' %}">
+            {% url 'bin' as bin %}
+            <a class="nav-link text-white {% if request.path == bin or request.path|slice:'/-' == bin %} active bg-gradient-primary {% endif %}" href="{% url 'bin' %}">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">delete</i>
               </div>
@@ -154,6 +154,8 @@
                   Create New Task
                 {% elif request.path == profile %}
                   Profile
+                {% elif request.path == bin %}
+                Bin
                 {% endif %}
               </li>
             </ol>
@@ -168,6 +170,8 @@
                 Create New Task
               {% elif request.path == profile %}
                 Profile
+              {% elif request.path == bin %}
+                Bin
               {% endif %}
             </h6>
           </nav>

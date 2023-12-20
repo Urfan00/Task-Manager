@@ -25,6 +25,7 @@ class TaskToMembersAction(DateMixin):
     task_member_is_read = models.BooleanField(default=False)
     task_member_is_pin = models.BooleanField(default=False)
     task_member_is_deleted = models.BooleanField(default=False)
+    bin_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.task.task_title} members : {self.to_member}"
@@ -40,6 +41,7 @@ class TaskCCMembersAction(DateMixin):
     task_member_is_read = models.BooleanField(default=False)
     task_member_is_pin = models.BooleanField(default=False)
     task_member_is_deleted = models.BooleanField(default=False)
+    bin_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.task.task_title} members : {self.cc_member}"
@@ -70,6 +72,7 @@ class Task(LoginRequiredMixin, DateMixin):
     task_deadline = models.DateField()
     task_author_is_deleted = models.BooleanField(default=False)
     task_category = models.ForeignKey(TaskCategory, on_delete=models.CASCADE, related_name='task_category')
+    bin_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.task_title

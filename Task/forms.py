@@ -8,18 +8,19 @@ from Account.models import Account
 class TaskForm(forms.ModelForm):
     to_member = forms.ModelMultipleChoiceField(
         queryset=Account.objects.all(),
-        widget=FilteredSelectMultiple("To members", is_stacked=False),
+        widget=FilteredSelectMultiple("To members", is_stacked=False, attrs={'class': 'form-control'}),
         required=False
     )
 
     cc_member = forms.ModelMultipleChoiceField(
         queryset=Account.objects.all(),
-        widget=FilteredSelectMultiple("CC members", is_stacked=False),
+        widget=FilteredSelectMultiple("CC members", is_stacked=False, attrs={'class': 'form-control'}),
         required=False
     )
 
     task_category = forms.ModelChoiceField(
         queryset=TaskCategory.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'}),
         required=False
     )
 
@@ -36,6 +37,46 @@ class TaskForm(forms.ModelForm):
         ]
         widgets = {
             'task_content': CKEditorWidget(),
+            'task_title' : forms.TextInput(
+                attrs={
+                    'class' : 'form-control',
+                    'type' : 'text'
+                }
+            ),
+            'task_image' : forms.ClearableFileInput(
+                attrs={
+                    'type' : 'file',
+                    'class' : 'form-control',
+                }
+            ),
+            'task_status' : forms.Select(
+                attrs={
+                    'placeholder' :"-seçin-",
+                    'class' : 'form-control',
+
+                }
+            ),
+            'task_category' : forms.Select(
+                attrs={
+                    'placeholder' :"-seçin-",
+                    'class' : 'form-control',
+
+                }
+            ),
+            'task_importance_level' : forms.Select(
+                attrs={
+                    'placeholder' :"-seçin-",
+                    'class' : 'form-control',
+
+                }
+            ),
+            'task_deadline' : forms.DateTimeInput(
+                attrs={
+                    "class" : 'inpClass form-control',
+                    'type': 'datetime-local',
+                    'placeholder' :"yyyy-dd-mm"
+                }
+            )
         }
 
     def save(self, commit=True):

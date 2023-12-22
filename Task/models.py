@@ -69,7 +69,7 @@ class Task(LoginRequiredMixin, DateMixin):
     task_author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='task_author')
     task_status = models.CharField(max_length=20, choices=status_title, null=True, blank=True) # status create olan qoyulsun yoxsa edit olanda
     task_importance_level = models.CharField(max_length=20, choices=importance_level_status)
-    task_deadline = models.DateField()
+    task_deadline = models.DateTimeField()
     task_author_is_deleted = models.BooleanField(default=False)
     task_category = models.ForeignKey(TaskCategory, on_delete=models.CASCADE, related_name='task_category')
     bin_deleted = models.BooleanField(default=False)

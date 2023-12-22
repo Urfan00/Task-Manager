@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
-from .models import Task
-from .forms import TaskForm
+from .models import Task, TaskCCMembersAction, TaskToMembersAction
+from .forms import TaskDetailForm, TaskForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Case, When, Value, BooleanField
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -254,6 +254,31 @@ class BinListView(LoginRequiredMixin, ListView):
         context["bin_tasks"] = bin_tasks
         return context
 
+
+class TaskDetailView(LoginRequiredMixin, DetailView, CreateView):
+    model = Task
+    template_name = 'task-detail.html'
+    form_class = TaskDetailForm
+    context_object_name = 'editTask'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['to_members_actions'] = TaskToMembersAction.objects.filter(task=self.object)
+        context['cc_members_actions'] = TaskCCMembersAction.objects.filter(task=self.object)
+        return context
+
+    def form_valid(self, form, *args, **kwargs):
+        # Get the task instance
+        task = Task.objects.get(pk=self.kwargs.get('pk'))
+
+        # Update the task_status field with the form data
+        task.task_status = form.cleaned_data['task_status']
+
+        # Save the updated instance
+        task.save()
+        messages.success(self.request, 'Task status successfully change.')
+
+        return redirect("task_detail", pk=self.kwargs.get('pk'))
 
 # PIN & DELETE & UNDELETE & DELETE FOREVER
 from django.http import JsonResponse

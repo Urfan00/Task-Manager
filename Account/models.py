@@ -57,7 +57,7 @@ class Account(AbstractUser):
     image = models.ImageField(upload_to=Uploader.user_image, null=True, blank=True, max_length=255)
     birthday = models.DateField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
-    department = models.OneToOneField(Department, on_delete=models.CASCADE, related_name='user_department', null=True, blank=True)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='user_department', null=True, blank=True)
     first_time_login = models.BooleanField(default=True)
 
     username = None

@@ -92,3 +92,18 @@ class TaskForm(forms.ModelForm):
             TaskCCMembersAction.objects.create(task=task, cc_member=cmember)
 
         return task
+
+
+class TaskDetailForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['task_status']
+        widgets = {
+            'task_status' : forms.Select(
+                attrs={
+                    'placeholder' :"-seçin-",
+                    'class' : 'form-control',
+
+                }
+            )
+        }

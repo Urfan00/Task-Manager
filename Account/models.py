@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from services.uploader import Uploader
 from services.mixins import DateMixin
 from ckeditor.fields import RichTextField
+from datetime import date
 
 
 
@@ -45,9 +46,9 @@ class Department(DateMixin):
 
 class Account(AbstractUser):
     user_status = (
-        ('head_of_department', 'Head of Department'),
-        ('assistant', 'Assistant'),
-        ('staff_department', 'Staff Department')
+        ('Head of Department', 'Head of Department'),
+        ('Assistant', 'Assistant'),
+        ('Staff Department', 'Staff Department')
     )
     status = models.CharField(max_length=20, choices=user_status, null=True, blank=True)
     FIN = models.CharField(max_length=21, unique=True)
@@ -79,6 +80,14 @@ class Account(AbstractUser):
             self.set_password(fin_str)
 
         super().save(*args, **kwargs)
+
+    # Your custom function to calculate age
+    def calculate_age(self):
+        if self.birthday:
+            today = date.today()
+            age = today.year - self.birthday.year - ((today.month, today.day) < (self.birthday.month, self.birthday.day))
+            return age
+        return None
 
     class Meta:
         verbose_name = 'Account'

@@ -3,7 +3,6 @@ from services.mixins import DateMixin
 from Account.models import Account
 from services.uploader import Uploader
 from ckeditor.fields import RichTextField
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 
@@ -52,7 +51,7 @@ class TaskCCMembersAction(DateMixin):
         verbose_name_plural = 'Task cc Members Action'
 
 
-class Task(LoginRequiredMixin, DateMixin):
+class Task(DateMixin):
     status_title = (
         ('Working', 'Working'),
         ('Canceled', 'Canceled'),
@@ -80,3 +79,17 @@ class Task(LoginRequiredMixin, DateMixin):
     class Meta:
         verbose_name = 'Task'
         verbose_name_plural = 'Task'
+
+
+class TaskActionLog(DateMixin):
+    log_author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='log_author')
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='log_task')
+    old_status = models.CharField(max_length=20, choices=Task.status_title)
+    new_status = models.CharField(max_length=20, choices=Task.status_title)
+
+    def __str__(self):
+        return f"{self.log_author.first_name} {self.log_author.last_name} - {self.task.task_title}"
+
+    class Meta:
+        verbose_name = 'Task Action Log'
+        verbose_name_plural = 'Task Action Log'

@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
-from .models import Task, TaskCCMembersAction, TaskToMembersAction
+from .models import Task, TaskActionLog, TaskCCMembersAction, TaskToMembersAction
 from .forms import TaskDetailForm, TaskForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Case, When, Value, BooleanField
@@ -270,18 +270,31 @@ class TaskDetailView(LoginRequiredMixin, DetailView, CreateView):
         context = super().get_context_data(**kwargs)
         context['to_members_actions'] = TaskToMembersAction.objects.filter(task=self.object)
         context['cc_members_actions'] = TaskCCMembersAction.objects.filter(task=self.object)
+        context['logs'] = TaskActionLog.objects.filter(task=self.object).order_by('-created_at').all()[:5]
         return context
 
     def form_valid(self, form, *args, **kwargs):
         # Get the task instance
         task = Task.objects.get(pk=self.kwargs.get('pk'))
 
+        # Save the old status before updating
+        old_status = task.task_status
+
         # Update the task_status field with the form data
         task.task_status = form.cleaned_data['task_status']
 
         # Save the updated instance
         task.save()
-        messages.success(self.request, 'Task status successfully change.')
+
+        # Create a TaskActionLog entry for the status change
+        TaskActionLog.objects.create(
+            log_author=self.request.user,
+            task=task,
+            old_status=old_status,
+            new_status=task.task_status,
+        )
+
+        messages.success(self.request, 'Task status successfully changed.')
 
         return redirect("task_detail", pk=self.kwargs.get('pk'))
 

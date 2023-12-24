@@ -1,6 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
-from .models import Task, TaskCategory, TaskToMembersAction, TaskCCMembersAction
+from .models import Task, TaskActionLog, TaskCategory, TaskToMembersAction, TaskCCMembersAction
 
 
 
@@ -31,9 +31,16 @@ class TaskCCMembersActionAdmin(ImportExportModelAdmin):
     list_filter = ['task_member_is_read', 'task_member_is_pin', 'task_member_is_deleted', 'bin_deleted']
 
 
+class TaskActionLogAdmin(ImportExportModelAdmin):
+    list_display = ['id', 'log_author', 'task', 'old_status', 'new_status', 'created_at', 'updated_at']
+    list_display_links = ['id', 'log_author']
+    search_fields = ['log_author__first_name', 'log_author__last_name']
+
+
 admin.site.register(Task, TaskAdmin)
 admin.site.register(TaskCategory, TaskCategoryAdmin)
 admin.site.register(TaskToMembersAction, TaskToMembersActionAdmin)
 admin.site.register(TaskCCMembersAction, TaskCCMembersActionAdmin)
+admin.site.register(TaskActionLog, TaskActionLogAdmin)
 
 

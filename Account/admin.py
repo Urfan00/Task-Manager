@@ -31,7 +31,7 @@ class AccountAdmin(BaseUserAdmin, ImportExportModelAdmin):
 
 
 class DepartmentAdmin(ImportExportModelAdmin):
-    list_display = ['id', 'title']
+    list_display = ['id', 'title', 'created_at', 'updated_at']
     list_display_links = ['id', 'title']
     search_fields = ['title']
 

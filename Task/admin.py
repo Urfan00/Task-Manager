@@ -5,7 +5,7 @@ from .models import Task, TaskActionLog, TaskCategory, TaskToMembersAction, Task
 
 
 class TaskCategoryAdmin(ImportExportModelAdmin):
-    list_display = ['id', 'category_title']
+    list_display = ['id', 'category_title', 'created_at', 'updated_at']
     list_display_links = ['id', 'category_title']
     search_fields = ['category_title']
 

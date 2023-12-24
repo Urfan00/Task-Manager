@@ -271,19 +271,28 @@ class TaskDetailView(LoginRequiredMixin, DetailView, CreateView):
         context['to_members_actions'] = TaskToMembersAction.objects.filter(task=self.object)
         context['cc_members_actions'] = TaskCCMembersAction.objects.filter(task=self.object)
         context['logs'] = TaskActionLog.objects.filter(task=self.object).order_by('-created_at').all()[:5]
+
+        # Mark the task as read for the current user (assuming the current user is either to_member or cc_member)
+
+        to_member_action = TaskToMembersAction.objects.filter(task=self.object, to_member=self.request.user).first()
+        cc_member_action = TaskCCMembersAction.objects.filter(task=self.object, cc_member=self.request.user).first()
+
+        if to_member_action:
+            to_member_action.task_member_is_read = True
+            to_member_action.save()
+
+        if cc_member_action:
+            cc_member_action.task_member_is_read = True
+            cc_member_action.save()
+
         return context
 
     def form_valid(self, form, *args, **kwargs):
         # Get the task instance
         task = Task.objects.get(pk=self.kwargs.get('pk'))
-
-        # Save the old status before updating
         old_status = task.task_status
 
-        # Update the task_status field with the form data
         task.task_status = form.cleaned_data['task_status']
-
-        # Save the updated instance
         task.save()
 
         # Create a TaskActionLog entry for the status change

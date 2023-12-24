@@ -198,10 +198,15 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     template_name = 'create_task.html'
     success_url = reverse_lazy('create')
 
+    def get_form_kwargs(self):
+        kwargs = super(TaskCreateView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the current user to the form
+        return kwargs
+
     def form_valid(self, form):
         # Set the task_author to the current user before saving
         form.instance.task_author = self.request.user
-        messages.success(self.request, 'Task successfully send.')
+        messages.success(self.request, 'Task successfully sent.')
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -279,6 +284,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView, CreateView):
         messages.success(self.request, 'Task status successfully change.')
 
         return redirect("task_detail", pk=self.kwargs.get('pk'))
+
 
 # PIN & DELETE & UNDELETE & DELETE FOREVER
 from django.http import JsonResponse

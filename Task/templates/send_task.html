@@ -65,9 +65,7 @@
 
                         <tr>
                           <td>
-                            <a href="{% url 'task_detail' task.pk %}">
-                              <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
-                            </a>
+                            <p class="text-xs font-weight-bold mb-0">{{ task.task_title }}</p>
                           </td>
                           <td>
                             <p class="text-xs font-weight-bold mb-0">{{ task.task_category.category_title }}</p>
@@ -107,7 +105,7 @@
                             <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline|date:"M j, Y, H:i" }}</span>
                           </td>
                           <td class="align-middle">
-                            <a href="#" class="text-secondary font-weight-bold text-xs" data-task-id="{{ task.id }}">
+                            <a href="{% url 'task_detail' task.pk %}" class="text-secondary font-weight-bold text-xs" data-task-id="{{ task.id }}">
                                 <i class="material-icons opacity-10 text-dark" title="Edit">edit</i>
                             </a>
                             <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ task.id }}" data-target="successToast">

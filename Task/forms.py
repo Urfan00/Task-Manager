@@ -3,6 +3,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from .models import Task, TaskCategory, TaskToMembersAction, TaskCCMembersAction
 from ckeditor.widgets import CKEditorWidget
 from Account.models import Account
+from django.db.models import Q
 
 
 class TaskForm(forms.ModelForm):
@@ -23,6 +24,29 @@ class TaskForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=False
     )
+
+    # Other fields and Meta class remain unchanged...
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(TaskForm, self).__init__(*args, **kwargs)
+
+        if user:
+            # Adjust the to_member and cc_member field queryset based on the user's role
+            if user.status == 'Head of Department':
+                # Head of Department can send tasks to anyone
+                self.fields['to_member'].queryset = Account.objects.exclude(id=user.id)
+                self.fields['cc_member'].queryset = Account.objects.exclude(id=user.id)
+
+            elif user.status == 'Assistant':
+                # Assistant can send tasks to everyone except Head of Department
+                self.fields['to_member'].queryset = Account.objects.exclude(Q(status='Head of Department') | Q(id=user.id))
+                self.fields['cc_member'].queryset = Account.objects.exclude(id=user.id)
+
+            elif user.status == 'Staff Department':
+                # Staff Department can send tasks and cc_member to other staff members
+                self.fields['to_member'].queryset = Account.objects.exclude(Q(status='Head of Department')| Q(status='Assistant') | Q(id=user.id))
+                self.fields['cc_member'].queryset = Account.objects.exclude(id=user.id)
 
     class Meta:
         model = Task

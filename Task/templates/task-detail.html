@@ -79,7 +79,9 @@
                           {{ editTask.task_content|safe }}
                         </p>
                         <hr class="horizontal gray-light my-4">
-                        <img src="{{ editTask.task_image.url }}" width="750px" height="400px" style="object-fit: contain;" alt="">
+                        {% if editTask.task_image %}
+                          <img src="{{ editTask.task_image.url }}" width="750px" height="400px" style="object-fit: contain;" alt="">
+                        {% endif %}
                       </div>
                     </div>
                   </div>

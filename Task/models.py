@@ -84,8 +84,8 @@ class Task(DateMixin):
 class TaskActionLog(DateMixin):
     log_author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='log_author')
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='log_task')
-    old_status = models.CharField(max_length=20, choices=Task.status_title)
-    new_status = models.CharField(max_length=20, choices=Task.status_title)
+    old_status = models.CharField(max_length=20, choices=Task.status_title, null=True, blank=True)
+    new_status = models.CharField(max_length=20, choices=Task.status_title, null=True, blank=True)
 
     def __str__(self):
         return f"{self.log_author.first_name} {self.log_author.last_name} - {self.task.task_title}"
@@ -93,3 +93,34 @@ class TaskActionLog(DateMixin):
     class Meta:
         verbose_name = 'Task Action Log'
         verbose_name_plural = 'Task Action Log'
+
+
+class ForwardTask(DateMixin):
+    forward_author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='author_forward')
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='task_forward')
+    forward_author_content = RichTextField(null=True, blank=True)
+    forward_author_task_is_deleted = models.BooleanField(default=False)
+    bin_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.forward_author.get_full_name()} - {self.task.task_title}"
+
+    class Meta:
+        verbose_name = 'Forward Task'
+        verbose_name_plural = 'Forward Task'
+
+
+class ForwardedToWhom(DateMixin):
+    whom = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='whom')
+    forward_task = models.ForeignKey(ForwardTask, on_delete=models.CASCADE, related_name='forward_task')
+    whom_is_read = models.BooleanField(default=False)
+    whom_is_pin = models.BooleanField(default=False)
+    whom_is_deleted = models.BooleanField(default=False)
+    bin_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.whom.get_full_name()
+
+    class Meta:
+        verbose_name = 'Forwarded To Whom'
+        verbose_name_plural = 'Forwarded To Whom'

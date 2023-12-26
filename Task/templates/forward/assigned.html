@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+  #task-search::placeholder{
+    color:white;
+  }
+
+  /* Center pagination */
+  .pagination {
+    justify-content: center;
+  }
+
+  /* Style active page */
+  .pagination .page-item.active .page-link {
+    background-color: #e91e63;
+    border-color: #e91e63;
+  }
+
+  /* Style pagination links */
+  .pagination .page-link {
+    color: #333;
+  }
+
+  .pagination .page-link:hover {
+    background-color: #eee;
+  }
+</style>
+
+    <div class="container-fluid py-4">
+
+      <div id="tasks_table_id" class="row">
+        <div class="col-12">
+          <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-2 pb-1 d-flex justify-content-between px-4 align-items-center">
+                  <h6 class="text-white text-capitalize ps-3">Assigned Task table</h6>
+                  <!-- Search Form for To Task table -->
+                  <form class="mb-1" id="task-search-form">
+                      <div class="input-group bg-gradient-white input-group-outline ">
+                          <input style="color:white;" type="text" class="form-control" id="task-search" name="search" value="{{ request.GET.search }}" placeholder="search ...">
+                      </div>
+                  </form>
+              </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0" id="task-table">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Author</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Forward Author</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Task Title</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Task Category</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Importance</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Create Time</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deadline</th>
+                      <th class="text-secondary opacity-7"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for a_task in assigned_tasks %}
+
+                        <tr>
+                          <td>
+                            <div class="d-flex px-2 py-1 align-items-center">
+                              <div>
+                                <img src="{% if a_task.forward_task.task.task_author.image %}{{ a_task.forward_task.task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ a_task.forward_task.task.task_author.get_full_name|capfirst }}">
+                              </div>
+                              <div class="d-flex flex-column justify-content-center">
+                                <h6 class="mb-0 text-sm">{{ a_task.forward_task.task.task_author.get_full_name|capfirst }}</h6>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.task.task_author.email }}</p>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.task.task_author.department.title|capfirst }} / {{ a_task.forward_task.task.task_author.status|capfirst }}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="d-flex px-2 py-1 align-items-center">
+                              <div>
+                                <img src="{% if a_task.forward_task.forward_author.image %}{{ a_task.forward_task.forward_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ a_task.forward_task.forward_author.get_full_name|capfirst }}">
+                              </div>
+                              <div class="d-flex flex-column justify-content-center">
+                                <h6 class="mb-0 text-sm">{{ a_task.forward_task.forward_author.get_full_name|capfirst }}</h6>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.forward_author.email }}</p>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.forward_author.department.title|capfirst }} / {{ a_task.forward_task.forward_author.status|capfirst }}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ a_task.forward_task.task.task_title|capfirst }}</p>
+                          </td>
+                          <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ a_task.forward_task.task.task_category.category_title|capfirst }}</p>
+                          </td>
+                          <td class="align-middle text-center text-sm">
+                            <span class="badge badge-sm bg-gradient-{% if a_task.forward_task.task.task_status == 'Working' %}info{% elif a_task.forward_task.task.task_status == 'Done' %}success{% elif a_task.forward_task.task.task_status == 'Canceled' %}danger{% endif %}">{{ a_task.forward_task.task.task_status }}</span>
+                          </td>
+                          <td class="align-middle text-center text-sm">
+                            <span class="badge badge-sm bg-gradient-{% if a_task.forward_task.task.task_importance_level == 'Medium' %}info{% elif a_task.forward_task.task.task_importance_level == 'Low' %}success{% elif a_task.forward_task.task.task_importance_level == 'High' %}danger{% endif %}">{{ a_task.forward_task.task.task_importance_level }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">{{ a_task.created_at|date:"M j, Y, H:i" }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">{{ a_task.forward_task.task.task_deadline|date:"M j, Y, H:i" }}</span>
+                          </td>
+                          <td class="align-middle">
+                            <a href="{% url 'task_detail' a_task.forward_task.task.pk %}" class="text-secondary font-weight-bold text-xs" data-task-id="{{ a_task.forward_task.task.id }}">
+                                <i class="material-icons opacity-10 text-dark" title="Edit">edit</i>
+                            </a>
+                            <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ a_task.forward_task.task.id }}" data-target="successToast">
+                                <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
+                            </a>
+                          </td>
+                        </tr>
+
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              {% if tasks.paginator.num_pages > 1 %}
+                <div class="row justify-center pt-90 lg:pt-50 mt-3">
+                  <div class="">
+                    <nav aria-label="Page navigation">
+                      <ul class="pagination justify-content-center">
+                        {% if tasks.has_previous %}
+                          <li class="page-item">
+                            <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.previous_page_number }}" aria-label="Previous">
+                              <span aria-hidden="true">&laquo;</span>
+                            </a>
+                          </li>
+                        {% endif %}
+
+                        {% if tasks.number|add:'-2' > 1 %}
+                          <li class="page-item">
+                            <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.number|add:'-3' }}">&hellip;</a>
+                          </li>
+                        {% endif %}
+
+                        {% for num in tasks.paginator.page_range %}
+                          {% if tasks.number == num %}
+                            <li class="page-item active">
+                              <a class="page-link" href="?search={{ request.GET.search }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                          {% elif num > tasks.number|add:'-3' and num < tasks.number|add:'3' %}
+                            <li class="page-item">
+                              <a class="page-link" href="?search={{ request.GET.search }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                          {% endif %}
+                        {% endfor %}
+
+                        {% if tasks.paginator.num_pages > tasks.number|add:'2' %}
+                            <li class="page-item">
+                              <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.number|add:'3' }}">&hellip;</a>
+                            </li>
+                        {% endif %}
+
+                        {% if tasks.has_next %}
+                          <li class="page-item">
+                            <a class="page-link" href="?search={{ request.GET.search }}&page={{ tasks.next_page_number }}" aria-label="Next">
+                              <span aria-hidden="true">&raquo;</span>
+                            </a>
+                          </li>
+                        {% endif %}
+                      </ul>
+                    </nav>
+                  </div>
+                </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+{% comment %} --------------------------------------------------- {% endcomment %}
+
+<div class="position-fixed bottom-1 end-1 z-index-2">
+  <div class="toast fade hide p-2 bg-white" role="alert" aria-live="assertive" id="successToast" aria-atomic="true">
+    <div class="toast-header border-0">
+      <i class="material-icons text-success me-2">check</i>
+      <span class="me-auto font-weight-bold">Material Dashboard </span>
+      <small class="text-body">11 mins ago</small>
+      <i class="fas fa-times text-md ms-3 cursor-pointer" data-bs-dismiss="toast" aria-label="Close"></i>
+    </div>
+    <hr class="horizontal dark m-0">
+    <div class="toast-body">
+      Hello, world! This is a notification message.
+    </div>
+  </div>
+ 
+</div>
+{% endblock %}
+
+{% block js %}
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  function updateURL(varName, query, page) {
+    let state = history.state;
+    let title = document.title;
+    let pageQuery = page ? `&${varName}_page=${page}` : '';
+    let url = window.location.origin + window.location.pathname + `?${varName}=${encodeURI(query)}${pageQuery}`;
+    history.pushState(state, title, url);
+  }
+
+  $(document).ready(function () {
+    const task = $("#task-search");
+    const searchForm = $("#task-search-form");
+
+    function performSearch(page) {
+      $.ajax({
+        type: 'GET',
+        url: window.location.href,
+        data: { ...searchForm.serializeArray(), [`${task.attr('id')}_page`]: page },
+        success: function (response) {
+          $('#task-table').html($(response).find('#task-table').html());
+        },
+        error: function (error) {
+          console.error('Error during search:', error);
+        }
+      });
+    }
+
+    task.on('input', function (e) {
+      updateURL("search", e.target.value);
+      performSearch(1);
+    });
+  });
+
+
+  var csrfToken = "{{ csrf_token }}";
+
+  $(document).ready(function () {
+    $('.action-icon').on('click', function () {
+        // Get the task ID from the data attribute
+        var taskId = $(this).data('task-id');
+        // Get the action type from the data attribute ('pin' or 'delete')
+        var actionType = $(this).data('action-type');
+
+        // Send an AJAX request to toggle the pin or delete status
+        $.ajax({
+            type: 'POST',
+            url: '/toggle_action_status/',  // Update the URL to the endpoint in your Django views
+            data: {
+                'task_id': taskId,
+                'action_type': actionType,
+                csrfmiddlewaretoken: csrfToken,  // Include the CSRF token in the data
+
+            },
+            success: function (data) {
+                // Perform any other actions based on the server response
+                // If needed, you can add additional logic here
+            }
+        });
+    });
+  });
+
+</script>
+
+
+{% endblock %}

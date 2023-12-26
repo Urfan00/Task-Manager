@@ -1,12 +1,13 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
-from .models import Task, TaskActionLog, TaskCCMembersAction, TaskToMembersAction
-from .forms import TaskDetailForm, TaskForm
+from .models import ForwardTask, ForwardedToWhom, Task, TaskActionLog, TaskCCMembersAction, TaskToMembersAction
+from .forms import ForwardForm, TaskDetailForm, TaskForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Case, When, Value, BooleanField
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
+from django.http import JsonResponse
 
 
 
@@ -227,9 +228,10 @@ class BinListView(LoginRequiredMixin, ListView):
 
 
         bin_tasks = Task.objects.filter(
-              Q(task_author=self.request.user, task_author_is_deleted=True, bin_deleted=False)
-            | Q(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_deleted=True, task_to_member_action__bin_deleted=False)
-            | Q(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_deleted=True, task_cc_member_action__bin_deleted=False)
+            Q(task_author=self.request.user, task_author_is_deleted=True, bin_deleted=False) |
+            Q(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_deleted=True, task_to_member_action__bin_deleted=False) |
+            Q(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_deleted=True, task_cc_member_action__bin_deleted=False) |
+            Q(task_forward__forward_author=self.request.user, task_forward__forward_author_task_is_deleted=True, task_forward__bin_deleted=False)
         ).order_by('-created_at').distinct()
 
         if search:
@@ -308,23 +310,135 @@ class TaskDetailView(LoginRequiredMixin, DetailView, CreateView):
         return redirect("task_detail", pk=self.kwargs.get('pk'))
 
 
-# PIN & DELETE & UNDELETE & DELETE FOREVER
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+# Forwarded Task
+class ForwardTaskListView(LoginRequiredMixin, ListView):
+    model = ForwardTask
+    template_name = 'forward/forward.html'
+    paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        forwarded_tasks = ForwardTask.objects.filter(forward_author=self.request.user, forward_author_task_is_deleted=False, bin_deleted=False).order_by('-created_at').all()
+
+        search = self.request.GET.get('search', '')
+
+        if search:
+            forwarded_tasks = forwarded_tasks.filter(
+                Q(task__task_title__icontains=search) |
+                Q(task__task_category__category_title__icontains=search) |
+                Q(task__task_status__icontains=search) |
+                Q(task__task_importance_level__icontains=search)
+                # Q(forward_task__whom__first_name__icontains= search) |
+                # Q(forward_task__whom__last_name__icontains= search)
+            )
+
+        # Pagination cc_tasks
+        page = self.request.GET.get('page')
+        paginator = Paginator(forwarded_tasks, self.paginate_by)
+
+        try:
+            forwarded_tasks = paginator.page(page)
+        except PageNotAnInteger:
+            forwarded_tasks = paginator.page(1)
+        except EmptyPage:
+            forwarded_tasks = paginator.page(paginator.num_pages)
+
+        context["forwarded_tasks"] = forwarded_tasks
+
+        return context
+
+
+class AssignedTaskListView(LoginRequiredMixin, ListView):
+    model = ForwardedToWhom
+    template_name = 'forward/assigned.html'
+    paginate_by = 50
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        assigned_tasks = ForwardedToWhom.objects.filter(whom=self.request.user, whom_is_deleted=False, bin_deleted=False).order_by('-created_at').all()
+
+        search = self.request.GET.get('search', '')
+
+        if search:
+            assigned_tasks = assigned_tasks.filter(
+                Q(forward_task__task__task_author__first_name__icontains=search) |
+                Q(forward_task__task__task_author__last_name__icontains=search) |
+                Q(forward_task__task__task_author__email__icontains=search) |
+                Q(forward_task__task__task_author__department__title__icontains=search) |
+                Q(forward_task__task__task_author__status__icontains=search) |
+                Q(forward_task__task__task_author__status__icontains=search) |
+                Q(forward_task__forward_author__first_name__icontains=search) |
+                Q(forward_task__forward_author__last_name__icontains=search) |
+                Q(forward_task__forward_author__email__icontains=search) |
+                Q(forward_task__forward_author__department__title__icontains=search) |
+                Q(forward_task__forward_author__status__icontains=search) |
+                Q(forward_task__forward_author__status__icontains=search) |
+                Q(forward_task__task__task_title__icontains=search) |
+                Q(forward_task__task__task_category__category_title__icontains=search) |
+                Q(forward_task__task__task_status__icontains=search) |
+                Q(forward_task__task__task_importance_level__icontains=search)
+                # Q(forward_task__whom__first_name__icontains= search) |
+                # Q(forward_task__whom__last_name__icontains= search)
+            )
+
+        # Pagination cc_tasks
+        page = self.request.GET.get('page')
+        paginator = Paginator(assigned_tasks, self.paginate_by)
+
+        try:
+            assigned_tasks = paginator.page(page)
+        except PageNotAnInteger:
+            assigned_tasks = paginator.page(1)
+        except EmptyPage:
+            assigned_tasks = paginator.page(paginator.num_pages)
+
+        context["assigned_tasks"] = assigned_tasks
+
+        return context
+
+
+class ForwardFormView(LoginRequiredMixin, CreateView):
+    model = ForwardTask
+    form_class = ForwardForm
+    template_name = 'forward/forward_form.html'
+    success_url = reverse_lazy('forwarded')
+
+    def get_form_kwargs(self):
+        kwargs = super(ForwardFormView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the current user to the form
+        return kwargs
+
+    def form_valid(self, form):
+        task_pk = self.kwargs.get('pk')
+        task = get_object_or_404(Task, pk=task_pk)
+        # Set the task_author to the current user before saving
+        form.instance.forward_author = self.request.user
+        form.instance.task = task
+        messages.success(self.request, 'Forward Task successfully sent.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        # Additional logic can be added here if needed
+        messages.error(self.request, 'Could not send the forward task')
+        return super().form_invalid(form)
+
+
+# PIN & DELETE & UNDELETE & DELETE FOREVER
 
 def toggle_action_status(request):
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         action_type = request.POST.get('action_type')
-        
+
         # Use get_object_or_404 to handle the case where the Task doesn't exist
         task = get_object_or_404(Task, id=task_id)
-        
+
         # Check if the task_to_member_action and task_cc_member_action exist
         pin_delete_to_member = task.task_to_member_action.filter(task=task, to_member=request.user).first()
         pin_delete_cc_member = task.task_cc_member_action.filter(task=task, cc_member=request.user).first()
         pin_delete_send_member = Task.objects.filter(id=task_id, task_author=request.user).first()
+        delete_forwarded_task = ForwardTask.objects.filter(id=task_id, forward_author=request.user).first()
+        delete_assigned_task = ForwardedToWhom.objects.filter(forward_task__task__id=task_id, whom=request.user).first()
 
         if action_type == 'pin':
             # Toggle the task_member_is_pin status for task_to_member_action
@@ -336,6 +450,10 @@ def toggle_action_status(request):
             if pin_delete_cc_member:
                 pin_delete_cc_member.task_member_is_pin = not pin_delete_cc_member.task_member_is_pin
                 pin_delete_cc_member.save()
+
+            if delete_assigned_task:
+                delete_assigned_task.whom_is_pin = not delete_assigned_task.whom_is_pin
+                delete_assigned_task.save()
 
             return JsonResponse({'is_pinned': pin_delete_to_member.task_member_is_pin if pin_delete_to_member else False})
 
@@ -354,6 +472,14 @@ def toggle_action_status(request):
                 pin_delete_send_member.task_author_is_deleted = True
                 pin_delete_send_member.save()
 
+            if delete_forwarded_task:
+                delete_forwarded_task.forward_author_task_is_deleted = True
+                delete_forwarded_task.save()
+
+            if delete_assigned_task:
+                delete_assigned_task.whom_is_deleted = True
+                delete_assigned_task.save()
+
             return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})
 
         elif action_type == 'undelete':
@@ -371,6 +497,14 @@ def toggle_action_status(request):
                 pin_delete_send_member.task_author_is_deleted = False
                 pin_delete_send_member.save()
 
+            if delete_forwarded_task:
+                delete_forwarded_task.forward_author_task_is_deleted = False
+                delete_forwarded_task.save()
+
+            if delete_assigned_task:
+                delete_assigned_task.whom_is_deleted = False
+                delete_assigned_task.save()
+
             return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})
 
         elif action_type == 'delete_forever':
@@ -387,5 +521,13 @@ def toggle_action_status(request):
             if pin_delete_send_member:
                 pin_delete_send_member.bin_deleted = True
                 pin_delete_send_member.save()
+
+            if delete_forwarded_task:
+                delete_forwarded_task.bin_deleted = True
+                delete_forwarded_task.save()
+
+            if delete_assigned_task:
+                delete_assigned_task.bin_deleted = True
+                delete_assigned_task.save()
 
             return JsonResponse({'deleted': True})

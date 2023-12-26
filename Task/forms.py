@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from .models import Task, TaskCategory, TaskToMembersAction, TaskCCMembersAction
+from .models import ForwardTask, ForwardedToWhom, Task, TaskCategory, TaskToMembersAction, TaskCCMembersAction
 from ckeditor.widgets import CKEditorWidget
 from Account.models import Account
 from django.db.models import Q
@@ -131,3 +131,46 @@ class TaskDetailForm(forms.ModelForm):
                 }
             )
         }
+
+
+class ForwardForm(forms.ModelForm):
+    whom = forms.ModelMultipleChoiceField(
+        queryset=Account.objects.all(),
+        widget=FilteredSelectMultiple("Members", is_stacked=False, attrs={'class': 'form-control'}),
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(ForwardForm, self).__init__(*args, **kwargs)
+
+        if user:
+            # Adjust the to_member and cc_member field queryset based on the user's role
+            if user.status == 'Head of Department':
+                # Head of Department can send tasks to anyone
+                self.fields['whom'].queryset = Account.objects.exclude(id=user.id)
+
+            elif user.status == 'Assistant':
+                # Assistant can send tasks to everyone except Head of Department
+                self.fields['whom'].queryset = Account.objects.exclude(Q(status='Head of Department') | Q(id=user.id))
+
+            elif user.status == 'Staff Department':
+                # Staff Department can send tasks and cc_member to other staff members
+                self.fields['whom'].queryset = Account.objects.exclude(Q(status='Head of Department')| Q(status='Assistant') | Q(id=user.id))
+
+    class Meta:
+        model = ForwardTask
+        fields = ['forward_author_content']
+        widgets = {
+            'forward_author_content': CKEditorWidget()
+            }
+
+    def save(self, commit=True):
+        forward_task = super().save(commit)
+        
+        whom = self.cleaned_data.get('whom', [])
+
+        for member in whom:
+            ForwardedToWhom.objects.create(forward_task=forward_task, whom=member)
+
+        return forward_task

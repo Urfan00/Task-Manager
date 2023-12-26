@@ -73,21 +73,21 @@
             </a>
           </li>
           <li class="nav-item">
-            {% url 'create' as create %}
-            <a class="nav-link text-white {% if request.path == create or request.path|slice:'/-' == create %} active bg-gradient-primary {% endif %}" href="{% url 'create' %}">
+            {% url 'forwarded' as forwarded %}
+            <a class="nav-link text-white {% if request.path == forwarded or request.path|slice:'/-' == forwarded %} active bg-gradient-primary {% endif %}" href="{% url 'forwarded' %}">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">forward</i>
               </div>
-              <span class="nav-link-text ms-1">Forward to me</span>
+              <span class="nav-link-text ms-1">Forwarded Task</span>
             </a>
           </li>
           <li class="nav-item">
-            {% url 'create' as create %}
-            <a class="nav-link text-white {% if request.path == create or request.path|slice:'/-' == create %} active bg-gradient-primary {% endif %}" href="{% url 'create' %}">
+            {% url 'assigned' as assigned %}
+            <a class="nav-link text-white {% if request.path == assigned or request.path|slice:'/-' == assigned %} active bg-gradient-primary {% endif %}" href="{% url 'assigned' %}">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">forward</i>
               </div>
-              <span class="nav-link-text ms-1">Forward</span>
+              <span class="nav-link-text ms-1">Assigned Task</span>
             </a>
           </li>
           <li class="nav-item">
@@ -156,6 +156,10 @@
                   Profile
                 {% elif request.path == bin %}
                 Bin
+                {% elif request.path == forwarded %}
+                Forwarded
+                {% elif request.path == assigned %}
+                Assigned
                 {% endif %}
               </li>
             </ol>
@@ -172,6 +176,10 @@
                 Profile
               {% elif request.path == bin %}
                 Bin
+              {% elif request.path == forwarded %}
+                Forwarded
+              {% elif request.path == assigned %}
+                Assigned
               {% endif %}
             </h6>
           </nav>

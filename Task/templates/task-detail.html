@@ -67,9 +67,9 @@
                             <h6 class="mb-0">Task Content</h6>
                           </div>
                           <div class="col-md-4 text-end">
-                            <a href="javascript:;">
-                              <i class="fas fa-user-edit text-secondary text-sm" data-bs-toggle="tooltip"
-                                data-bs-placement="top" title="Edit Profile"></i>
+                            <a href="{% url 'task_forward' editTask.pk %}" class="d-flex justify-content-end align-items-center">Forward
+                              <i class="material-icons opacity-10" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="Forward">forward</i>
                             </a>
                           </div>
                         </div>
@@ -151,7 +151,7 @@
                               </div>
                               <div class="d-flex align-items-start flex-column justify-content-center">
                                 <h6 class="mb-0 text-sm">{{ log.log_author.get_full_name|capfirst }}</h6>
-                                <p class="mb-0 text-xs">change status from <strong>{{ log.old_status }}</strong> to <strong>{{ log.new_status }}</strong>.</p>
+                                <p class="mb-0 text-xs">change status from <strong>{% if log.old_status %}{{ log.old_status }}{% else %}-----{% endif %}</strong> to <strong>{% if log.new_status %}{{ log.new_status }}{% else %}-----{% endif %}</strong>.</p>
                                 <p class="mb-0 text-xs">{{ log.created_at|date:"j M, Y, H:i" }}</p>
                               </div>
                             </li>

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AssignedTaskListView, BinListView, ForwardFormView, ForwardTaskListView, InboxListView, SendTaskListView, TaskCreateView, TaskDetailView, toggle_action_status
+from .views import AssignedTaskListView, BinListView, ForwardFormView, ForwardTaskListView, InboxListView, SendTaskListView, TaskCreateView, TaskDetailView, toggle_action_status, toggle_action_status_forward
 
 
 
@@ -16,5 +16,6 @@ urlpatterns = [
 
 
     path('toggle_action_status/', toggle_action_status, name='toggle_action_status'),
+    path('toggle_action_status_forward/', toggle_action_status_forward, name='toggle_action_status_forward'),
 
 ]

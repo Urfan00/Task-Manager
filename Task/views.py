@@ -4,7 +4,7 @@ from django.views.generic import ListView, DetailView, CreateView
 from .models import ForwardTask, ForwardedToWhom, Task, TaskActionLog, TaskCCMembersAction, TaskToMembersAction
 from .forms import ForwardForm, TaskDetailForm, TaskForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, Case, When, Value, BooleanField
+from django.db.models import F, Q, Case, When, Value, BooleanField
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.http import JsonResponse
@@ -234,6 +234,8 @@ class BinListView(LoginRequiredMixin, ListView):
             Q(task_forward__forward_author=self.request.user, task_forward__forward_author_task_is_deleted=True, task_forward__bin_deleted=False)
         ).order_by('-created_at').distinct()
 
+        bin_tasks = bin_tasks.annotate(forward_task_id=F('task_forward__id'))
+
         if search:
             bin_tasks = bin_tasks.filter(
                  Q(task_title__icontains=search)
@@ -437,8 +439,6 @@ def toggle_action_status(request):
         pin_delete_to_member = task.task_to_member_action.filter(task=task, to_member=request.user).first()
         pin_delete_cc_member = task.task_cc_member_action.filter(task=task, cc_member=request.user).first()
         pin_delete_send_member = Task.objects.filter(id=task_id, task_author=request.user).first()
-        delete_forwarded_task = ForwardTask.objects.filter(id=task_id, forward_author=request.user).first()
-        delete_assigned_task = ForwardedToWhom.objects.filter(forward_task__task__id=task_id, whom=request.user).first()
 
         if action_type == 'pin':
             # Toggle the task_member_is_pin status for task_to_member_action
@@ -450,10 +450,6 @@ def toggle_action_status(request):
             if pin_delete_cc_member:
                 pin_delete_cc_member.task_member_is_pin = not pin_delete_cc_member.task_member_is_pin
                 pin_delete_cc_member.save()
-
-            if delete_assigned_task:
-                delete_assigned_task.whom_is_pin = not delete_assigned_task.whom_is_pin
-                delete_assigned_task.save()
 
             return JsonResponse({'is_pinned': pin_delete_to_member.task_member_is_pin if pin_delete_to_member else False})
 
@@ -472,14 +468,6 @@ def toggle_action_status(request):
                 pin_delete_send_member.task_author_is_deleted = True
                 pin_delete_send_member.save()
 
-            if delete_forwarded_task:
-                delete_forwarded_task.forward_author_task_is_deleted = True
-                delete_forwarded_task.save()
-
-            if delete_assigned_task:
-                delete_assigned_task.whom_is_deleted = True
-                delete_assigned_task.save()
-
             return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})
 
         elif action_type == 'undelete':
@@ -497,14 +485,6 @@ def toggle_action_status(request):
                 pin_delete_send_member.task_author_is_deleted = False
                 pin_delete_send_member.save()
 
-            if delete_forwarded_task:
-                delete_forwarded_task.forward_author_task_is_deleted = False
-                delete_forwarded_task.save()
-
-            if delete_assigned_task:
-                delete_assigned_task.whom_is_deleted = False
-                delete_assigned_task.save()
-
             return JsonResponse({'is_deleted': pin_delete_to_member.task_member_is_deleted if pin_delete_to_member else False})
 
         elif action_type == 'delete_forever':
@@ -521,6 +501,49 @@ def toggle_action_status(request):
             if pin_delete_send_member:
                 pin_delete_send_member.bin_deleted = True
                 pin_delete_send_member.save()
+
+            return JsonResponse({'deleted': True})
+
+
+def toggle_action_status_forward(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        action_type = request.POST.get('action_type')
+
+        # Check if the task_to_member_action and task_cc_member_action exist
+        delete_forwarded_task = ForwardTask.objects.filter(id=task_id, forward_author=request.user).first()
+        delete_assigned_task = ForwardedToWhom.objects.filter(id=task_id, whom=request.user).first()
+
+        if action_type == 'forward_pin':
+            if delete_assigned_task:
+                delete_assigned_task.whom_is_pin = not delete_assigned_task.whom_is_pin
+                delete_assigned_task.save()
+
+            return JsonResponse({'is_pinned': delete_assigned_task.whom_is_pin if delete_assigned_task else False})
+
+        elif action_type == 'forward_undelete':
+
+            if delete_forwarded_task:
+                delete_forwarded_task.forward_author_task_is_deleted = False
+                delete_forwarded_task.save()
+
+            if delete_assigned_task:
+                delete_assigned_task.whom_is_deleted = False
+                delete_assigned_task.save()
+
+            return JsonResponse({'is_deleted':True})
+
+        elif action_type == 'forwarded_task_delete':
+            if delete_forwarded_task:
+                delete_forwarded_task.forward_author_task_is_deleted = True
+                delete_forwarded_task.save()
+
+            if delete_assigned_task:
+                delete_assigned_task.whom_is_deleted = True
+                delete_assigned_task.save()
+            return JsonResponse({'is_deleted': True})
+
+        elif action_type == 'delete_forever_forward':
 
             if delete_forwarded_task:
                 delete_forwarded_task.bin_deleted = True

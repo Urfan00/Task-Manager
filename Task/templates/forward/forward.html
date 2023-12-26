@@ -94,7 +94,7 @@
                             <a href="{% url 'task_detail' fw_task.task.pk %}" class="text-secondary font-weight-bold text-xs">
                               <i class="material-icons opacity-10 text-dark" title="Edit">edit</i>
                             </a>
-                            <a href="#" onclick="return confirm('Are you sure you want to permanently delete the task?');" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ fw_task.id }}" data-target="successToast">
+                            <a href="#" onclick="return confirm('Are you sure you want to permanently delete the task?');" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type-forward="forwarded_task_delete" data-task-id="{{ fw_task.id }}" data-target="successToast">
                                 <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
                             </a>
                           </td>
@@ -105,7 +105,7 @@
                 </table>
               </div>
 
-              {% if bin_tasks.paginator.num_pages > 1 %}
+              {% if forwarded_tasks.paginator.num_pages > 1 %}
                 <div class="row justify-center pt-90 lg:pt-50 mt-3">
                   <div class="">
                     <nav aria-label="Page navigation">
@@ -223,12 +223,12 @@
         // Get the task ID from the data attribute
         var taskId = $(this).data('task-id');
         // Get the action type from the data attribute ('pin' or 'delete')
-        var actionType = $(this).data('action-type');
+        var actionType = $(this).data('action-type-forward');
 
         // Send an AJAX request to toggle the pin or delete status
         $.ajax({
             type: 'POST',
-            url: '/toggle_action_status/',  // Update the URL to the endpoint in your Django views
+            url: '/toggle_action_status_forward/',  // Update the URL to the endpoint in your Django views
             data: {
                 'task_id': taskId,
                 'action_type': actionType,

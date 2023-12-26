@@ -134,7 +134,7 @@
                           </div>
                         </td>
                         <td class="align-middle text-center text-sm">
-                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{% if task.task_status %}{{ task.task_status }}{% endif %}</span>
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
@@ -213,7 +213,7 @@
                           </div>
                         </td>
                         <td class="align-middle text-center text-sm">
-                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{% if task.task_status %}{{ task.task_status }}{% endif %}</span>
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
@@ -383,7 +383,7 @@
                           </div>
                         </td>
                         <td class="align-middle text-center text-sm">
-                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{% if task.task_status %}{{ task.task_status }}{% endif %}</span>
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>
@@ -464,7 +464,7 @@
                           </div>
                         </td>
                         <td class="align-middle text-center text-sm">
-                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{{ task.task_status }}</span>
+                          <span class="badge badge-sm bg-gradient-{% if task.task_status == 'Working' %}info{% elif task.task_status == 'Done' %}success{% elif task.task_status == 'Canceled' %}danger{% endif %}">{% if task.task_status %}{{ task.task_status }}{% endif %}</span>
                         </td>
                         <td class="align-middle text-center text-sm">
                           <span class="badge badge-sm bg-gradient-{% if task.task_importance_level == 'Medium' %}info{% elif task.task_importance_level == 'Low' %}success{% elif task.task_importance_level == 'High' %}danger{% endif %}">{{ task.task_importance_level }}</span>

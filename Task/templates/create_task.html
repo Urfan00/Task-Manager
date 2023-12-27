@@ -55,7 +55,7 @@
                     </div>
                     <!-- Task Deadline -->
                     <div class="input-group input-group-outline mb-3 mt-3 focused is-focused">
-                      <label for="{{ form.task_deadline.id_for_label }}" class="form-label">Task Deadline</label>
+                      {% comment %} <label for="{{ form.task_deadline.id_for_label }}" class="form-label">Task Deadline</label> {% endcomment %}
                       {{ form.task_deadline }}
                     </div>
                   </div>
@@ -99,14 +99,4 @@
         </div>
       </div>
 
-{% endblock %}
-
-{% block js %}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#id_to_member, #id_cc_member, #id_task_category').select2();
-    });
-</script>
 {% endblock %}

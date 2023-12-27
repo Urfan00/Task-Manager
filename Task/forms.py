@@ -9,13 +9,15 @@ from django.db.models import Q
 class TaskForm(forms.ModelForm):
     to_member = forms.ModelMultipleChoiceField(
         queryset=Account.objects.all(),
-        widget=FilteredSelectMultiple("To members", is_stacked=False, attrs={'class': 'form-control'}),
+        # widget=FilteredSelectMultiple("To members", is_stacked=False, attrs={'class': 'form-control'}),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
         required=False
     )
 
     cc_member = forms.ModelMultipleChoiceField(
         queryset=Account.objects.all(),
-        widget=FilteredSelectMultiple("CC members", is_stacked=False, attrs={'class': 'form-control'}),
+        # widget=FilteredSelectMultiple("CC members", is_stacked=False, attrs={'class': 'form-control'}),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
         required=False
     )
 
@@ -136,7 +138,8 @@ class TaskDetailForm(forms.ModelForm):
 class ForwardForm(forms.ModelForm):
     whom = forms.ModelMultipleChoiceField(
         queryset=Account.objects.all(),
-        widget=FilteredSelectMultiple("Members", is_stacked=False, attrs={'class': 'form-control'}),
+        # widget=FilteredSelectMultiple("Members", is_stacked=False, attrs={'class': 'form-control'}),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
         required=False
     )
 

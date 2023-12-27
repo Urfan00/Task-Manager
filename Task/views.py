@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
+from Core.models import MemberTaskStatistic
 from .models import ForwardTask, ForwardedToWhom, Task, TaskActionLog, TaskCCMembersAction, TaskToMembersAction
 from .forms import ForwardForm, TaskDetailForm, TaskForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,7 +9,7 @@ from django.db.models import F, Q, Case, When, Value, BooleanField
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.http import JsonResponse
-
+from datetime import datetime
 
 
 class InboxListView(LoginRequiredMixin, ListView):
@@ -207,11 +208,28 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         # Set the task_author to the current user before saving
         form.instance.task_author = self.request.user
+
+        member_statistic = MemberTaskStatistic.objects.get(member=self.request.user, status=True)
+
+        if member_statistic.created_at.date() != datetime.now().date():
+            member_statistic.status = False
+            MemberTaskStatistic.objects.create(
+                member=self.request.user,
+                sent_task_count=1,
+                to_task_count=form.cleaned_data['to_member'].count(),
+                cc_task_count=form.cleaned_data['cc_member'].count()
+            )
+        else:
+            member_statistic.sent_task_count += 1
+            member_statistic.to_task_count += form.cleaned_data['to_member'].count()
+            member_statistic.cc_task_count += form.cleaned_data['cc_member'].count()
+
+        member_statistic.save()
+
         messages.success(self.request, 'Task successfully sent.')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # Additional logic can be added here if needed
         messages.error(self.request, 'Could not send the task')
         return super().form_invalid(form)
 
@@ -461,6 +479,22 @@ class ForwardFormView(LoginRequiredMixin, CreateView):
         # Set the task_author to the current user before saving
         form.instance.forward_author = self.request.user
         form.instance.task = task
+
+        member_statistic = MemberTaskStatistic.objects.get(member=self.request.user, status=True)
+
+        if member_statistic.created_at.date() != datetime.now().date():
+            member_statistic.status = False
+            MemberTaskStatistic.objects.create(
+                member=self.request.user,
+                forwarded_task_count=1,
+                assigned_task_count=form.cleaned_data['whom'].count(),
+            )
+        else:
+            member_statistic.forwarded_task_count += 1
+            member_statistic.assigned_task_count += form.cleaned_data['whom'].count()
+
+        member_statistic.save()
+
         messages.success(self.request, 'Forward Task successfully sent.')
         return super().form_valid(form)
 

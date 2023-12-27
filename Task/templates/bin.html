@@ -122,10 +122,10 @@
                             <span class="text-secondary text-xs font-weight-bold">{{ task.task_deadline }}</span>
                           </td>
                           <td class="align-middle">
-                            <a href="#" onclick="return confirm('Are you sure you want to undelete the task?');" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="undelete" data-task-id="{{ task.id }}" data-action-type-forward="forward_undelete" data-task-id-forward="{{ task.forward_task_id }}" data-target="successToast">
+                            <a href="#" onclick="return confirm('Are you sure you want to undelete the task?');" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="undelete" data-task-id="{{ task.id }}" data-action-type-forward="forward_undelete" data-task-id-assigned="{{ task.assigned_task_id }}" data-task-id-forward="{{ task.forward_task_id }}" data-target="successToast">
                                 <i class="material-icons opacity-10 text-info" title="Un Delete">undo</i>
                             </a>
-                            <a href="#" onclick="return confirm('Are you sure you want to permanently delete the task?');" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete_forever" data-action-type-forward="delete_forever_forward" data-task-id-forward="{{ task.forward_task_id }}" data-task-id="{{ task.id }}" data-target="successToast">
+                            <a href="#" onclick="return confirm('Are you sure you want to permanently delete the task?');" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete_forever" data-action-type-forward="delete_forever_forward" data-task-id-assigned="{{ task.assigned_task_id }}" data-task-id-forward="{{ task.forward_task_id }}" data-task-id="{{ task.id }}" data-target="successToast">
                                 <i class="material-icons opacity-10 text-danger" title="Un Delete">delete_forever</i>
                             </a>
                           </td>
@@ -278,6 +278,7 @@
     $('.action-icon').on('click', function () {
         // Get the task ID from the data attribute
         var taskId = $(this).data('task-id-forward');
+        var taskIdAssigned = $(this).data('task-id-assigned');
         // Get the action type from the data attribute ('pin' or 'delete')
         var actionType = $(this).data('action-type-forward');
 
@@ -287,6 +288,7 @@
             url: '/toggle_action_status_forward/',  // Update the URL to the endpoint in your Django views
             data: {
                 'task_id': taskId,
+                'assigned_id': taskIdAssigned,
                 'action_type': actionType,
                 csrfmiddlewaretoken: csrfToken,  // Include the CSRF token in the data
 

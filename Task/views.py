@@ -231,10 +231,13 @@ class BinListView(LoginRequiredMixin, ListView):
             Q(task_author=self.request.user, task_author_is_deleted=True, bin_deleted=False) |
             Q(task_to_member_action__to_member=self.request.user, task_to_member_action__task_member_is_deleted=True, task_to_member_action__bin_deleted=False) |
             Q(task_cc_member_action__cc_member=self.request.user, task_cc_member_action__task_member_is_deleted=True, task_cc_member_action__bin_deleted=False) |
-            Q(task_forward__forward_author=self.request.user, task_forward__forward_author_task_is_deleted=True, task_forward__bin_deleted=False)
+            Q(task_forward__forward_author=self.request.user, task_forward__forward_author_task_is_deleted=True, task_forward__bin_deleted=False) |
+            Q(task_forward__forward_task__whom=self.request.user, task_forward__forward_task__whom_is_deleted=True, task_forward__forward_task__bin_deleted=False)
         ).order_by('-created_at').distinct()
 
-        bin_tasks = bin_tasks.annotate(forward_task_id=F('task_forward__id'))
+        bin_tasks = bin_tasks.annotate(
+            forward_task_id=F('task_forward__id'),
+            assigned_task_id=F('task_forward__forward_task__id'))
 
         if search:
             bin_tasks = bin_tasks.filter(
@@ -280,6 +283,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView, CreateView):
 
         to_member_action = TaskToMembersAction.objects.filter(task=self.object, to_member=self.request.user).first()
         cc_member_action = TaskCCMembersAction.objects.filter(task=self.object, cc_member=self.request.user).first()
+        assigned_task_read = ForwardedToWhom.objects.filter(forward_task__task=self.object, whom=self.request.user).first()
 
         if to_member_action:
             to_member_action.task_member_is_read = True
@@ -288,6 +292,10 @@ class TaskDetailView(LoginRequiredMixin, DetailView, CreateView):
         if cc_member_action:
             cc_member_action.task_member_is_read = True
             cc_member_action.save()
+
+        if assigned_task_read:
+            assigned_task_read.whom_is_read = True
+            assigned_task_read.save()
 
         return context
 
@@ -320,7 +328,11 @@ class ForwardTaskListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        forwarded_tasks = ForwardTask.objects.filter(forward_author=self.request.user, forward_author_task_is_deleted=False, bin_deleted=False).order_by('-created_at').all()
+
+        forwarded_tasks = ForwardTask.objects.filter(
+            forward_author=self.request.user,
+            forward_author_task_is_deleted=False,
+            bin_deleted=False).order_by('-created_at').all()
 
         search = self.request.GET.get('search', '')
 
@@ -357,12 +369,44 @@ class AssignedTaskListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        assigned_tasks = ForwardedToWhom.objects.filter(whom=self.request.user, whom_is_deleted=False, bin_deleted=False).order_by('-created_at').all()
+
+        assigned_tasks = ForwardedToWhom.objects.filter(
+            whom=self.request.user,
+            whom_is_deleted=False,
+            whom_is_pin=False,
+            bin_deleted=False).order_by('-created_at').all()
+
+        assigned_tasks_pinned = ForwardedToWhom.objects.filter(
+            whom=self.request.user,
+            whom_is_deleted=False,
+            whom_is_pin=True,
+            bin_deleted=False).order_by('-created_at').all()
 
         search = self.request.GET.get('search', '')
 
         if search:
             assigned_tasks = assigned_tasks.filter(
+                Q(forward_task__task__task_author__first_name__icontains=search) |
+                Q(forward_task__task__task_author__last_name__icontains=search) |
+                Q(forward_task__task__task_author__email__icontains=search) |
+                Q(forward_task__task__task_author__department__title__icontains=search) |
+                Q(forward_task__task__task_author__status__icontains=search) |
+                Q(forward_task__task__task_author__status__icontains=search) |
+                Q(forward_task__forward_author__first_name__icontains=search) |
+                Q(forward_task__forward_author__last_name__icontains=search) |
+                Q(forward_task__forward_author__email__icontains=search) |
+                Q(forward_task__forward_author__department__title__icontains=search) |
+                Q(forward_task__forward_author__status__icontains=search) |
+                Q(forward_task__forward_author__status__icontains=search) |
+                Q(forward_task__task__task_title__icontains=search) |
+                Q(forward_task__task__task_category__category_title__icontains=search) |
+                Q(forward_task__task__task_status__icontains=search) |
+                Q(forward_task__task__task_importance_level__icontains=search)
+                # Q(forward_task__whom__first_name__icontains= search) |
+                # Q(forward_task__whom__last_name__icontains= search)
+            )
+
+            assigned_tasks_pinned = assigned_tasks_pinned.filter(
                 Q(forward_task__task__task_author__first_name__icontains=search) |
                 Q(forward_task__task__task_author__last_name__icontains=search) |
                 Q(forward_task__task__task_author__email__icontains=search) |
@@ -395,6 +439,7 @@ class AssignedTaskListView(LoginRequiredMixin, ListView):
             assigned_tasks = paginator.page(paginator.num_pages)
 
         context["assigned_tasks"] = assigned_tasks
+        context["assigned_tasks_pinned"] = assigned_tasks_pinned
 
         return context
 
@@ -508,11 +553,12 @@ def toggle_action_status(request):
 def toggle_action_status_forward(request):
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
+        assigned_id = request.POST.get('assigned_id')
         action_type = request.POST.get('action_type')
 
         # Check if the task_to_member_action and task_cc_member_action exist
         delete_forwarded_task = ForwardTask.objects.filter(id=task_id, forward_author=request.user).first()
-        delete_assigned_task = ForwardedToWhom.objects.filter(id=task_id, whom=request.user).first()
+        delete_assigned_task = ForwardedToWhom.objects.filter(id=assigned_id, whom=request.user).first()
 
         if action_type == 'forward_pin':
             if delete_assigned_task:

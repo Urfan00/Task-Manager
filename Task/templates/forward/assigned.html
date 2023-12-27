@@ -61,9 +61,18 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for a_task in assigned_tasks %}
 
-                        <tr>
+                    {% if assigned_tasks_pinned %}
+                      <tr>
+                        <td>
+                          Pinned
+                        </td>
+                      </tr>
+                    {% endif %}
+
+                    {% for a_task in assigned_tasks_pinned %}
+
+                        <tr {% if not a_task.whom_is_read %}class="bg-gradient-light"{% endif %}>
                           <td>
                             <div class="d-flex px-2 py-1 align-items-center">
                               <div>
@@ -110,18 +119,91 @@
                             <a href="{% url 'task_detail' a_task.forward_task.task.pk %}" class="text-secondary font-weight-bold text-xs" data-task-id="{{ a_task.forward_task.task.id }}">
                                 <i class="material-icons opacity-10 text-dark" title="Edit">edit</i>
                             </a>
-                            <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="delete" data-task-id="{{ a_task.forward_task.task.id }}" data-target="successToast">
+                            <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="forward_pin" data-task-id="{{ a_task.id }}" data-target="successToast">
+                              <i class="material-icons opacity-10 text-dark" title="Pin">push_pin</i>
+                            </a>
+                            <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="forwarded_task_delete" data-task-id="{{ a_task.id }}" data-target="successToast">
                                 <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
                             </a>
                           </td>
                         </tr>
 
                     {% endfor %}
+
+                    {% if assigned_tasks %}
+                      <tr>
+                        <td>
+                          Not Pinned
+                        </td>
+                      </tr>
+                    {% endif %}
+
+                    {% for a_task in assigned_tasks %}
+
+                        <tr {% if not a_task.whom_is_read %}class="bg-gradient-light"{% endif %}>
+                          <td>
+                            <div class="d-flex px-2 py-1 align-items-center">
+                              <div>
+                                <img src="{% if a_task.forward_task.task.task_author.image %}{{ a_task.forward_task.task.task_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ a_task.forward_task.task.task_author.get_full_name|capfirst }}">
+                              </div>
+                              <div class="d-flex flex-column justify-content-center">
+                                <h6 class="mb-0 text-sm">{{ a_task.forward_task.task.task_author.get_full_name|capfirst }}</h6>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.task.task_author.email }}</p>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.task.task_author.department.title|capfirst }} / {{ a_task.forward_task.task.task_author.status|capfirst }}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="d-flex px-2 py-1 align-items-center">
+                              <div>
+                                <img src="{% if a_task.forward_task.forward_author.image %}{{ a_task.forward_task.forward_author.image.url }}{% else %}{% static '' %}img/team-2.jpg{% endif %}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ a_task.forward_task.forward_author.get_full_name|capfirst }}">
+                              </div>
+                              <div class="d-flex flex-column justify-content-center">
+                                <h6 class="mb-0 text-sm">{{ a_task.forward_task.forward_author.get_full_name|capfirst }}</h6>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.forward_author.email }}</p>
+                                <p class="text-xs text-secondary mb-0">{{ a_task.forward_task.forward_author.department.title|capfirst }} / {{ a_task.forward_task.forward_author.status|capfirst }}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ a_task.forward_task.task.task_title|capfirst }}</p>
+                          </td>
+                          <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ a_task.forward_task.task.task_category.category_title|capfirst }}</p>
+                          </td>
+                          <td class="align-middle text-center text-sm">
+                            <span class="badge badge-sm bg-gradient-{% if a_task.forward_task.task.task_status == 'Working' %}info{% elif a_task.forward_task.task.task_status == 'Done' %}success{% elif a_task.forward_task.task.task_status == 'Canceled' %}danger{% endif %}">{{ a_task.forward_task.task.task_status }}</span>
+                          </td>
+                          <td class="align-middle text-center text-sm">
+                            <span class="badge badge-sm bg-gradient-{% if a_task.forward_task.task.task_importance_level == 'Medium' %}info{% elif a_task.forward_task.task.task_importance_level == 'Low' %}success{% elif a_task.forward_task.task.task_importance_level == 'High' %}danger{% endif %}">{{ a_task.forward_task.task.task_importance_level }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">{{ a_task.created_at|date:"M j, Y, H:i" }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">{{ a_task.forward_task.task.task_deadline|date:"M j, Y, H:i" }}</span>
+                          </td>
+                          <td class="align-middle">
+                            <a href="{% url 'task_detail' a_task.forward_task.task.pk %}" class="text-secondary font-weight-bold text-xs" data-task-id="{{ a_task.forward_task.task.id }}">
+                                <i class="material-icons opacity-10 text-dark" title="Edit">edit</i>
+                            </a>
+                            <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="forward_pin" data-task-id="{{ a_task.id }}" data-target="successToast">
+                              <i class="material-icons opacity-10 text-dark" title="Pin">push_pin</i>
+                            </a>
+                            <a href="#" class="action-icon text-secondary font-weight-bold text-xs toast-btn" data-action-type="forwarded_task_delete" data-task-id="{{ a_task.id }}" data-target="successToast">
+                                <i class="material-icons opacity-10 text-danger" title="Delete">delete</i>
+                            </a>
+                          </td>
+                        </tr>
+
+                    {% endfor %}
+
+
                   </tbody>
                 </table>
               </div>
 
-              {% if tasks.paginator.num_pages > 1 %}
+              {% if assigned_tasks.paginator.num_pages > 1 %}
                 <div class="row justify-center pt-90 lg:pt-50 mt-3">
                   <div class="">
                     <nav aria-label="Page navigation">
@@ -237,16 +319,16 @@
   $(document).ready(function () {
     $('.action-icon').on('click', function () {
         // Get the task ID from the data attribute
-        var taskId = $(this).data('task-id');
+        var assigned_id = $(this).data('task-id');
         // Get the action type from the data attribute ('pin' or 'delete')
         var actionType = $(this).data('action-type');
 
         // Send an AJAX request to toggle the pin or delete status
         $.ajax({
             type: 'POST',
-            url: '/toggle_action_status/',  // Update the URL to the endpoint in your Django views
+            url: '/toggle_action_status_forward/',  // Update the URL to the endpoint in your Django views
             data: {
-                'task_id': taskId,
+                'assigned_id': assigned_id,
                 'action_type': actionType,
                 csrfmiddlewaretoken: csrfToken,  // Include the CSRF token in the data
 

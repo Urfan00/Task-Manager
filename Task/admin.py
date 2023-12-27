@@ -47,7 +47,7 @@ class ForwardTaskAdmin(ImportExportModelAdmin):
 class ForwardedToWhomAdmin(ImportExportModelAdmin):
     list_display = ['id', 'whom', 'forward_task', 'whom_is_read', 'whom_is_pin', 'whom_is_deleted', 'bin_deleted', 'created_at', 'updated_at']
     list_display_links = ['id', 'whom']
-    search_fields = ['whom__first_name', 'whom__last_name', 'forward_task__task_title']
+    search_fields = ['whom__first_name', 'whom__last_name', 'forward_task__task__task_title']
     list_filter = ['whom_is_read', 'whom_is_pin', 'whom_is_deleted', 'bin_deleted']
 
 

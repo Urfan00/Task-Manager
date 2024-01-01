@@ -105,13 +105,28 @@ class InboxView(LoginRequiredMixin, ListView):
             context["percent_cc_week"] = percent_change
 
             this_week_forwarded_count = sum([stat.forwarded_task_count for stat in this_week_statistic])
+            context["this_week_forwarded_count"] = this_week_forwarded_count
             last_week_forwarded_count = sum([stat.forwarded_task_count for stat in last_week_statistic])
 
+            if last_week_forwarded_count != 0:
+                percent_change = ((this_week_forwarded_count - last_week_forwarded_count) / last_week_forwarded_count) * 100
+            else:
+                percent_change = 100
+
+            context["percent_forwarded_week"] = percent_change
+
             this_week_assigned_count = sum([stat.assigned_task_count for stat in this_week_statistic])
+            context["this_week_assigned_count"] = this_week_assigned_count
             last_week_assigned_count = sum([stat.assigned_task_count for stat in last_week_statistic])
 
-            context["this_week_statistic"] = this_week_statistic
+            if last_week_assigned_count != 0:
+                percent_change = ((this_week_assigned_count - last_week_assigned_count) / last_week_assigned_count) * 100
+            else:
+                percent_change = 100
 
+            context["percent_assigned_week"] = percent_change
+
+            context["this_week_statistic"] = this_week_statistic
 
         return context
 

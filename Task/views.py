@@ -209,22 +209,34 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         # Set the task_author to the current user before saving
         form.instance.task_author = self.request.user
 
-        member_statistic = MemberTaskStatistic.objects.get(member=self.request.user, status=True)
+        try:
+            member_statistic = MemberTaskStatistic.objects.get(member=self.request.user, status=True)
+        except MemberTaskStatistic.DoesNotExist:
+            member_statistic = None
 
-        if member_statistic.created_at.date() != datetime.now().date():
-            member_statistic.status = False
-            MemberTaskStatistic.objects.create(
-                member=self.request.user,
-                sent_task_count=1,
-                to_task_count=form.cleaned_data['to_member'].count(),
-                cc_task_count=form.cleaned_data['cc_member'].count()
-            )
+        if member_statistic:
+            if  member_statistic.created_at.date() != datetime.now().date():
+                member_statistic.status = False
+                MemberTaskStatistic.objects.create(
+                    member=self.request.user,
+                    sent_task_count=1,
+                    to_task_count=form.cleaned_data['to_member'].count(),
+                    cc_task_count=form.cleaned_data['cc_member'].count()
+                )
+            else:
+                member_statistic.sent_task_count += 1
+                member_statistic.to_task_count += form.cleaned_data['to_member'].count()
+                member_statistic.cc_task_count += form.cleaned_data['cc_member'].count()
+
+            member_statistic.save()
         else:
-            member_statistic.sent_task_count += 1
-            member_statistic.to_task_count += form.cleaned_data['to_member'].count()
-            member_statistic.cc_task_count += form.cleaned_data['cc_member'].count()
+            MemberTaskStatistic.objects.create(
+                    member=self.request.user,
+                    sent_task_count=1,
+                    to_task_count=form.cleaned_data['to_member'].count(),
+                    cc_task_count=form.cleaned_data['cc_member'].count()
+                )
 
-        member_statistic.save()
 
         messages.success(self.request, 'Task successfully sent.')
         return super().form_valid(form)
@@ -480,20 +492,30 @@ class ForwardFormView(LoginRequiredMixin, CreateView):
         form.instance.forward_author = self.request.user
         form.instance.task = task
 
-        member_statistic = MemberTaskStatistic.objects.get(member=self.request.user, status=True)
+        try:
+            member_statistic = MemberTaskStatistic.objects.get(member=self.request.user, status=True)
+        except MemberTaskStatistic.DoesNotExist:
+            member_statistic = None
 
-        if member_statistic.created_at.date() != datetime.now().date():
-            member_statistic.status = False
-            MemberTaskStatistic.objects.create(
-                member=self.request.user,
-                forwarded_task_count=1,
-                assigned_task_count=form.cleaned_data['whom'].count(),
-            )
+        if member_statistic:
+            if member_statistic.created_at.date() != datetime.now().date():
+                member_statistic.status = False
+                MemberTaskStatistic.objects.create(
+                    member=self.request.user,
+                    forwarded_task_count=1,
+                    assigned_task_count=form.cleaned_data['whom'].count(),
+                )
+            else:
+                member_statistic.forwarded_task_count += 1
+                member_statistic.assigned_task_count += form.cleaned_data['whom'].count()
+
+            member_statistic.save()
         else:
-            member_statistic.forwarded_task_count += 1
-            member_statistic.assigned_task_count += form.cleaned_data['whom'].count()
-
-        member_statistic.save()
+            MemberTaskStatistic.objects.create(
+                    member=self.request.user,
+                    forwarded_task_count=1,
+                    assigned_task_count=form.cleaned_data['whom'].count(),
+                )
 
         messages.success(self.request, 'Forward Task successfully sent.')
         return super().form_valid(form)

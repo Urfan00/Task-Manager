@@ -1,6 +1,6 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
-from .models import Account
+from .models import Account, Department
 from .resources import AccountResource
 from .forms import ChangePasswordForm, CustomSetPasswordForm, ExcelForm, LoginForm, RegistrationForm, ResetPasswordForm
 from django.views.generic import CreateView
@@ -88,6 +88,8 @@ class RegisterView(StaffRequiredMixin, View):
 
             for data in imported_data:
                 data = list(data)
+                department_name = data[5]
+                department_instance = get_object_or_404(Department, id=department_name)
 
                 try:
                     Account.objects.create(
@@ -96,7 +98,7 @@ class RegisterView(StaffRequiredMixin, View):
                         number=data[2],
                         email=data[3],
                         FIN=data[4],
-                        department=data[5],
+                        department=department_instance,
                         status=data[6],
                     )
                 except IntegrityError as e:
